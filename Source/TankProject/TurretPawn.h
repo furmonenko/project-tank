@@ -16,7 +16,9 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
-	virtual void PostInitializeComponents() override;
+#if WITH_EDITOR
+	virtual void OnConstruction(const FTransform& Transform) override;
+#endif
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UCapsuleComponent* CapsuleComponent;
@@ -44,4 +46,7 @@ public:
 
 private:
 	void SetTeamColorToMesh(UStaticMeshComponent* MeshToColor);
+	
+	UPROPERTY()
+	UMaterialInstanceDynamic *M_TeamSlot;
 };

@@ -24,20 +24,31 @@ void ATurretPawn::BeginPlay()
 	Super::BeginPlay();	
 }
 
-void ATurretPawn::PostInitializeComponents()
+void ATurretPawn::OnConstruction(const FTransform& Transform)
 {
-	Super::PostInitializeComponents();
-	
-	if (IsValid(TurretMesh))
+	Super::OnConstruction(Transform);
+
+	if (IsValid(M_TeamSlot))
 	{
-		SetTeamColorToMesh(TurretMesh);
+		if (IsValid(TurretMesh))
+		{
+			SetTeamColorToMesh(TurretMesh);
+		}
+	
+		if (IsValid(BaseMesh))
+		{
+			SetTeamColorToMesh(BaseMesh);
+		}
 	}
-	
-	if (IsValid(BaseMesh))
+	else
 	{
-		SetTeamColorToMesh(BaseMesh);
+		int32 materialIndex = BaseMesh->GetMaterialIndex(SlotToColor);
+		M_TeamSlot = UMaterialInstanceDynamic::Create(BaseMesh->GetMaterial(materialIndex), this);
+		BaseMesh->SetMaterialByName(SlotToColor, M_TeamSlot);
+		TurretMesh->SetMaterialByName(SlotToColor, M_TeamSlot);
 	}
 }
+
 
 TArray<FName> ATurretPawn::GetAvailableSlotNames()
 {
@@ -53,12 +64,8 @@ TArray<FName> ATurretPawn::GetAvailableSlotNames()
 
 void ATurretPawn::SetTeamColorToMesh(UStaticMeshComponent* MeshToColor)
 {
-	int32 materialIndex = MeshToColor->GetMaterialIndex(SlotToColor);
-	UMaterialInstanceDynamic *M_TeamSlot = UMaterialInstanceDynamic::Create(MeshToColor->GetMaterial(materialIndex), this);
-
 	if (IsValid(M_TeamSlot))
 	{
 		M_TeamSlot->SetVectorParameterValue(MaterialParameterName,TeamColor);
-		MeshToColor->SetMaterialByName(SlotToColor, M_TeamSlot);
 	}
 }
