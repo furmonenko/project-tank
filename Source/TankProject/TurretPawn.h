@@ -14,16 +14,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-public:	
-	virtual void Tick(float DeltaTime) override;
 	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 public:
+	virtual void PostInitializeComponents() override;
+	
 	UPROPERTY(EditDefaultsOnly)
 	class UCapsuleComponent* CapsuleComponent;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* TurretMesh;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -31,7 +29,19 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	USceneComponent* ProjectileSpawnPoint;
-	
-	
 
+	UPROPERTY(EditAnywhere, Category = "TeamColor", meta = (GetOptions = "GetAvailableSlotNames"))
+	FName SlotToColor;
+	
+	UFUNCTION()
+	TArray<FName>GetAvailableSlotNames();
+	
+	UPROPERTY(EditAnywhere, Category = "TeamColor")
+	FName MaterialParameterName;
+	
+	UPROPERTY(EditAnywhere, Category = "TeamColor")
+	FLinearColor TeamColor;
+
+private:
+	void SetTeamColorToMesh(UStaticMeshComponent* MeshToColor);
 };

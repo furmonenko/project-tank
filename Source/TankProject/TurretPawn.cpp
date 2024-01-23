@@ -8,31 +8,57 @@ ATurretPawn::ATurretPawn()
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	ProjectileSpawnPoint = CreateDefaultSubobject<UCapsuleComponent>("ProjectileSpawnPoint");
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
 
 	RootComponent = CapsuleComponent;
 	
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
 	ProjectileSpawnPoint->SetupAttachment(GetRootComponent());
-	
+
+	MaterialParameterName = "Color";
 }
 
 void ATurretPawn::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay();	
+}
+
+void ATurretPawn::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 	
+	if (IsValid(TurretMesh))
+	{
+		SetTeamColorToMesh(TurretMesh);
+	}
+	
+	if (IsValid(BaseMesh))
+	{
+		SetTeamColorToMesh(BaseMesh);
+	}
 }
 
-void ATurretPawn::Tick(float DeltaTime)
+TArray<FName> ATurretPawn::GetAvailableSlotNames()
 {
-	Super::Tick(DeltaTime);
-
+	if (IsValid(TurretMesh))
+	{
+		return {"Team_Material"};
+	}
+	else
+	{
+		return TArray<FName>{};
+	}
 }
 
-void ATurretPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ATurretPawn::SetTeamColorToMesh(UStaticMeshComponent* MeshToColor)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	int32 materialIndex = MeshToColor->GetMaterialIndex(SlotToColor);
+	UMaterialInstanceDynamic *M_TeamSlot = UMaterialInstanceDynamic::Create(MeshToColor->GetMaterial(materialIndex), this);
 
+	if (IsValid(M_TeamSlot))
+	{
+		M_TeamSlot->SetVectorParameterValue(MaterialParameterName,TeamColor);
+		MeshToColor->SetMaterialByName(SlotToColor, M_TeamSlot);
+	}
 }
-
