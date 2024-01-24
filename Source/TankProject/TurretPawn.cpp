@@ -24,6 +24,7 @@ void ATurretPawn::BeginPlay()
 	Super::BeginPlay();	
 }
 
+#if WITH_EDITOR
 void ATurretPawn::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
@@ -42,13 +43,13 @@ void ATurretPawn::OnConstruction(const FTransform& Transform)
 	}
 	else
 	{
-		int32 materialIndex = BaseMesh->GetMaterialIndex(SlotToColor);
-		M_TeamSlot = UMaterialInstanceDynamic::Create(BaseMesh->GetMaterial(materialIndex), this);
+		int32 MaterialIndex = BaseMesh->GetMaterialIndex(SlotToColor);
+		M_TeamSlot = UMaterialInstanceDynamic::Create(BaseMesh->GetMaterial(MaterialIndex), this);
 		BaseMesh->SetMaterialByName(SlotToColor, M_TeamSlot);
 		TurretMesh->SetMaterialByName(SlotToColor, M_TeamSlot);
 	}
 }
-
+#endif
 
 TArray<FName> ATurretPawn::GetAvailableSlotNames()
 {
@@ -62,7 +63,7 @@ TArray<FName> ATurretPawn::GetAvailableSlotNames()
 	}
 }
 
-void ATurretPawn::SetTeamColorToMesh(UStaticMeshComponent* MeshToColor)
+void ATurretPawn::SetTeamColor()
 {
 	if (IsValid(M_TeamSlot))
 	{

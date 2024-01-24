@@ -35,9 +35,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "TeamColor", meta = (GetOptions = "GetAvailableSlotNames"))
 	FName SlotToColor;
 	
-	UFUNCTION()
-	TArray<FName>GetAvailableSlotNames();
-	
 	UPROPERTY(EditAnywhere, Category = "TeamColor")
 	FName MaterialParameterName;
 	
@@ -45,8 +42,9 @@ public:
 	FLinearColor TeamColor;
 
 private:
-	void SetTeamColorToMesh(UStaticMeshComponent* MeshToColor);
+	void SetTeamColor();
+	TArray<FName>GetAvailableSlotNames();
 	
 	UPROPERTY()
-	UMaterialInstanceDynamic *M_TeamSlot;
+	UMaterialInstanceDynamic* M_TeamSlot;
 };
