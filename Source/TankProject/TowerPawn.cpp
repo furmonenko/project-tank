@@ -6,5 +6,5 @@
 ATowerPawn::ATowerPawn()
 	:Super()
 {
-	
+	MaterialParameterName = "Param";
 }

@@ -32,19 +32,31 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	USceneComponent* ProjectileSpawnPoint;
 
-	UPROPERTY(EditAnywhere, Category = "TeamColor", meta = (GetOptions = "GetAvailableSlotNames"))
-	FName SlotToColor;
-	
-	UPROPERTY(EditAnywhere, Category = "TeamColor")
-	FName MaterialParameterName;
-	
+	// Material, which M_TeamSlot is gonna be made of.
+	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
+	UMaterialInterface* DefaultMaterial;
+
 	UPROPERTY(EditAnywhere, Category = "TeamColor")
 	FLinearColor TeamColor;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
+	FName MaterialParameterName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetTurretAvailableSlotNames"))
+	FName TurretMeshSlotToColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetBaseAvailableSlotNames"))
+	FName BaseMeshSlotToColor;
 
 private:
 	void SetTeamColor();
-	TArray<FName>GetAvailableSlotNames();
 	
+	UFUNCTION()
+	TArray<FName>GetTurretAvailableSlotNames();
+	
+	UFUNCTION()
+	TArray<FName>GetBaseAvailableSlotNames();
+
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_TeamSlot;
 };
