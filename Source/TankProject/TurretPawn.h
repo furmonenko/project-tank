@@ -16,9 +16,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
-#if WITH_EDITOR
 	virtual void OnConstruction(const FTransform& Transform) override;
-#endif
 	
 	UPROPERTY(EditDefaultsOnly)
 	class UCapsuleComponent* CapsuleComponent;
@@ -52,11 +50,11 @@ private:
 	void SetTeamColor();
 	
 	UFUNCTION()
-	TArray<FName>GetTurretAvailableSlotNames();
+	TArray <FName> GetTurretAvailableSlotNames();
 	
 	UFUNCTION()
-	TArray<FName>GetBaseAvailableSlotNames();
-
+	TArray <FName> GetBaseAvailableSlotNames();
+	
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_TeamSlot;
 };

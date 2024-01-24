@@ -21,24 +21,41 @@ ATurretPawn::ATurretPawn()
 
 void ATurretPawn::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+	SetTeamColor();	
 }
 
-#if WITH_EDITOR
 void ATurretPawn::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
+	SetTeamColor();
+}
 
+TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
+{
+	if(IsValid(TurretMesh))
+	{
+		return TurretMesh->GetMaterialSlotNames();
+	}
+	return TArray<FName>{};
+}
+
+TArray<FName> ATurretPawn::GetBaseAvailableSlotNames()
+{
+	if(IsValid(BaseMesh))
+	{
+		return BaseMesh->GetMaterialSlotNames();
+	}
+	return TArray<FName>{};
+}
+
+void ATurretPawn::SetTeamColor()
+{
 	if (IsValid(M_TeamSlot))
 	{
-		if (IsValid(TurretMesh))
+		if (IsValid(TurretMesh) && IsValid(BaseMesh))
 		{
-			SetTeamColor();
-		}
-	
-		if (IsValid(BaseMesh))
-		{
-			SetTeamColor();
+			M_TeamSlot->SetVectorParameterValue(MaterialParameterName, TeamColor);
 		}
 	}
 	else
@@ -54,40 +71,5 @@ void ATurretPawn::OnConstruction(const FTransform& Transform)
 		{
 			UE_LOG(LogTemp, Error, TEXT("No DEFAULT MATERIAL"));
 		}
-		
-
-	}
-}
-#endif
-
-TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
-{
-	if(IsValid(TurretMesh))
-	{
-		return TurretMesh->GetMaterialSlotNames();
-	}
-	else
-	{
-		return TArray<FName>{};
-	}
-}
-
-TArray<FName> ATurretPawn::GetBaseAvailableSlotNames()
-{
-	if(IsValid(BaseMesh))
-	{
-		return BaseMesh->GetMaterialSlotNames();
-	}
-	else
-	{
-		return TArray<FName>{};
-	}
-}
-
-void ATurretPawn::SetTeamColor()
-{
-	if (IsValid(M_TeamSlot))
-	{
-		M_TeamSlot->SetVectorParameterValue(MaterialParameterName, TeamColor);
 	}
 }
