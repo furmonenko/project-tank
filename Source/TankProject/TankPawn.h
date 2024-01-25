@@ -11,4 +11,13 @@ class TANKPROJECT_API ATankPawn : public ATurretPawn
 
 public:
 	ATankPawn();
+	
+	UFUNCTION(BlueprintCallable)
+	void Move(FVector2D ActionValue);
+
+	UFUNCTION(BlueprintCallable)
+	void Look(FVector2D ActionValue);
+	
+	UFUNCTION(BlueprintCallable)
+	void Fire();
 };
