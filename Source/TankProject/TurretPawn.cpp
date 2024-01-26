@@ -14,7 +14,7 @@ ATurretPawn::ATurretPawn()
 	
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
-	ProjectileSpawnPoint->SetupAttachment(GetRootComponent());
+	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
 
 	MaterialParameterName = "Color";
 }
@@ -71,5 +71,18 @@ void ATurretPawn::SetTeamColor()
 		{
 			UE_LOG(LogTemp, Error, TEXT("No DEFAULT MATERIAL"));
 		}
+	}
+}
+
+void ATurretPawn::RotateTurretSmooth() const 
+{
+	const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+	const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), 2.f);
+		
+	TurretMesh->SetWorldRotation(NewRotation);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, NewRotation.ToString());
 	}
 }

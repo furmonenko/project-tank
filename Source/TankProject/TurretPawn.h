@@ -14,6 +14,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	void RotateTurretSmooth() const;
+
+	FRotator TurretTargetRotation;
 	
 public:
 	virtual void OnConstruction(const FTransform& Transform) override;
