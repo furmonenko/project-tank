@@ -9,7 +9,8 @@ ATurretPawn::ATurretPawn()
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
-
+	TurningSpeed = 50.f;
+	
 	RootComponent = CapsuleComponent;
 	
 	TurretMesh->SetupAttachment(GetRootComponent());
@@ -76,13 +77,16 @@ void ATurretPawn::SetTeamColor()
 
 void ATurretPawn::RotateTurretSmooth() const 
 {
-	const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-	const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), 2.f);
-		
-	TurretMesh->SetWorldRotation(NewRotation);
-
-	if (GEngine)
+	if(IsValid(TurretMesh))
 	{
-		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, NewRotation.ToString());
-	}
+		const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), 2.f);
+		TurretMesh->SetWorldRotation(NewRotation);
+#if WITH_EDITOR
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, NewRotation.ToString());
+			}
+		}
+#endif
 }

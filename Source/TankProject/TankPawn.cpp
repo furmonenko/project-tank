@@ -12,7 +12,7 @@ ATankPawn::ATankPawn()
 	MaxSpeed = 200.f;
 	AccelerationRate = 5.f;
 	DecelerationRate = 5.f;
-
+	
 	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
@@ -26,12 +26,6 @@ void ATankPawn::BeginPlay()
 void ATankPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
-	if (TurretTargetRotation != FRotator::ZeroRotator)
-	{
-		RotateTurretSmooth();
-	}
-
 }
 
 void ATankPawn::Move(float ActionValue)
@@ -41,7 +35,7 @@ void ATankPawn::Move(float ActionValue)
 	if (IsValid(GetWorld()) && MovementSpeed != 0.f)
 	{
 		const FVector MovementVector = FVector(MovementSpeed * GetWorld()->GetDeltaSeconds(), 0.f, 0.f);
-		this->AddActorLocalOffset(MovementVector, true);
+		AddActorLocalOffset(MovementVector, true);
 	}
 }
 
@@ -49,14 +43,14 @@ void ATankPawn::Turn(float ActionValue)
 {
 	if(IsValid(GetWorld()))
 	{
-		FRotator TargetRotation = FRotator(0.f, ActionValue * 50.f * GetWorld()->GetDeltaSeconds(), 0.f);
-		this->AddActorLocalRotation(TargetRotation, true);
+		const FRotator TargetRotation = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
+		AddActorLocalRotation(TargetRotation, true);
 	}
 }
 
 void ATankPawn::Look(FVector2D ActionValue)
 {
-	if (PlayerController)
+	if (IsValid(PlayerController))
 	{
 		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Player Controller");
 
@@ -68,9 +62,11 @@ void ATankPawn::Look(FVector2D ActionValue)
 		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 20.f, 30, FColor::Blue);
 		TurretTargetRotation = Direction.Rotation();
 		
-		// Костильчик :( Без цього башня рівно на 90 градусів дивиться в інший бік :(
+		// By default tower is rotated 90 degrees wrong. Fixing it here.
 		TurretTargetRotation.Yaw -= 90.f;
 		TurretTargetRotation.Pitch = 0.f;
+
+		RotateTurretSmooth();
 	}
 }
 

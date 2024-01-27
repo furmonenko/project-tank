@@ -11,14 +11,7 @@ class TANKPROJECT_API ATurretPawn : public APawn
 
 public:
 	ATurretPawn();
-
-protected:
 	virtual void BeginPlay() override;
-	void RotateTurretSmooth() const;
-
-	FRotator TurretTargetRotation;
-	
-public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -48,6 +41,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetBaseAvailableSlotNames"))
 	FName BaseMeshSlotToColor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	double TurningSpeed;
+
+	UPROPERTY(BlueprintReadOnly)
+	FRotator TurretTargetRotation;
+	
+	UFUNCTION(BlueprintCallable)
+	void RotateTurretSmooth() const;
 
 private:
 	void SetTeamColor();
