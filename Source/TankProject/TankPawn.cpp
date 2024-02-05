@@ -9,6 +9,7 @@ ATankPawn::ATankPawn()
 {
 	PlayerController = nullptr;
 	MovementSpeed = 0.f;
+	TurningSpeed = 50.f;
 	MaxSpeed = 200.f;
 	AccelerationRate = 5.f;
 	DecelerationRate = 5.f;
@@ -48,7 +49,7 @@ void ATankPawn::Turn(float ActionValue)
 	}
 }
 
-void ATankPawn::Look(FVector2D ActionValue)
+void ATankPawn::SetTargetLookRotation(FVector2D ActionValue)
 {
 	if (IsValid(PlayerController))
 	{
@@ -65,8 +66,6 @@ void ATankPawn::Look(FVector2D ActionValue)
 		// By default tower is rotated 90 degrees wrong. Fixing it here.
 		TurretTargetRotation.Yaw -= 90.f;
 		TurretTargetRotation.Pitch = 0.f;
-
-		RotateTurretSmooth();
 	}
 }
 

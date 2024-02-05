@@ -9,7 +9,7 @@ ATurretPawn::ATurretPawn()
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
-	TurningSpeed = 50.f;
+	RotationRate = 2.f;
 	
 	RootComponent = CapsuleComponent;
 	
@@ -24,6 +24,12 @@ void ATurretPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	SetTeamColor();	
+}
+
+void ATurretPawn::Tick(float delta)
+{
+	Super::Tick(delta);
+	RotateTurretSmooth();
 }
 
 void ATurretPawn::OnConstruction(const FTransform& Transform)
@@ -80,8 +86,9 @@ void ATurretPawn::RotateTurretSmooth() const
 	if(IsValid(TurretMesh))
 	{
 		const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), 2.f);
+		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), RotationRate);
 		TurretMesh->SetWorldRotation(NewRotation);
+		
 #if WITH_EDITOR
 			if (GEngine)
 			{

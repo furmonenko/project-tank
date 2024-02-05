@@ -19,6 +19,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	double MaxSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	double TurningSpeed;
 	
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	double AccelerationRate;
@@ -33,7 +36,7 @@ public:
 	void Turn(float ActionValue);
 	
 	UFUNCTION(BlueprintCallable)
-	void Look(FVector2D ActionValue);
+	void SetTargetLookRotation(FVector2D ActionValue);
 	
 	UFUNCTION(BlueprintCallable)
 	void Fire();
