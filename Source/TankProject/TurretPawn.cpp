@@ -9,7 +9,6 @@ ATurretPawn::ATurretPawn()
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
-	RotationRate = 2.f;
 	
 	RootComponent = CapsuleComponent;
 	
@@ -78,6 +77,19 @@ void ATurretPawn::SetTeamColor()
 		{
 			UE_LOG(LogTemp, Error, TEXT("No DEFAULT MATERIAL"));
 		}
+	}
+}
+
+void ATurretPawn::Fire()
+{
+	if (ProjectileSpawnPoint)
+	{
+		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
+	}
+	
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, "Fire");
 	}
 }
 

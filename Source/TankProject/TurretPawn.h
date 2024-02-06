@@ -24,7 +24,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* BaseMesh;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	USceneComponent* ProjectileSpawnPoint;
 
 	// Material, which M_TeamSlot is gonna be made of.
@@ -44,9 +44,15 @@ public:
 	FName BaseMeshSlotToColor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	double RotationRate;
+	float RotationRate = 2.f;
 	
-	UPROPERTY(BlueprintReadOnly)
+	UFUNCTION(BlueprintCallable)
+    virtual void Fire();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetTargetLookRotation(FRotator Rotation) {};
+	
+	UPROPERTY(BlueprintReadWrite)
 	FRotator TurretTargetRotation;
 	
 	UFUNCTION(BlueprintCallable)

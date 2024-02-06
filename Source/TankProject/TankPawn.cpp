@@ -7,14 +7,10 @@
 ATankPawn::ATankPawn()
 	:Super()
 {
-	PlayerController = nullptr;
-	MovementSpeed = 0.f;
-	TurningSpeed = 50.f;
-	MaxSpeed = 200.f;
-	AccelerationRate = 5.f;
-	DecelerationRate = 5.f;
-	
-	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	if (IsValid(CapsuleComponent))
+	{
+		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	
+	}
 }
 
 void ATankPawn::BeginPlay()
@@ -49,17 +45,17 @@ void ATankPawn::Turn(float ActionValue)
 	}
 }
 
-void ATankPawn::SetTargetLookRotation(FVector2D ActionValue)
+void ATankPawn::SetTargetLookRotation(FRotator Rotation)
 {
-	if (IsValid(PlayerController))
+	if (IsValid(PlayerController) && IsValid(TurretMesh))
 	{
 		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Player Controller");
 
 		FHitResult HitResult;
 		PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
-
-		const FVector Direction = HitResult.ImpactPoint - TurretMesh->GetComponentLocation();
 		
+		const FVector Direction = HitResult.ImpactPoint - TurretMesh->GetComponentLocation();
+			
 		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 20.f, 30, FColor::Blue);
 		TurretTargetRotation = Direction.Rotation();
 		
@@ -69,13 +65,15 @@ void ATankPawn::SetTargetLookRotation(FVector2D ActionValue)
 	}
 }
 
-void ATankPawn::Fire()
+/*void ATankPawn::Fire()
 {
+	Super::Fire();
+	
 	if (ProjectileSpawnPoint)
 	{
 		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
 	}
-}
+}*/
 
 
 

@@ -15,19 +15,19 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	double MovementSpeed;
+	float MovementSpeed = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	double MaxSpeed;
+	float MaxSpeed = 200.f;;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	double TurningSpeed;
+	float TurningSpeed = 50.f;
 	
 	UPROPERTY(EditAnywhere, Category = "Movement")
-	double AccelerationRate;
+	float AccelerationRate = 5.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	double DecelerationRate;
+	float DecelerationRate = 5.f;
 	
 	UFUNCTION(BlueprintCallable)
 	void Move(float ActionValue);
@@ -35,13 +35,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Turn(float ActionValue);
 	
-	UFUNCTION(BlueprintCallable)
-	void SetTargetLookRotation(FVector2D ActionValue);
+	// virtual void Fire() override;
+	virtual void SetTargetLookRotation(FRotator Rotation) override;
 	
-	UFUNCTION(BlueprintCallable)
-	void Fire();
-
 private:
 	UPROPERTY()
-	APlayerController* PlayerController;
+	APlayerController* PlayerController = nullptr;
 };

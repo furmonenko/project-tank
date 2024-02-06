@@ -13,5 +13,4 @@ class TANKPROJECT_API ATowerPawn : public ATurretPawn
 
 public:
 	ATowerPawn();
-	
 };
