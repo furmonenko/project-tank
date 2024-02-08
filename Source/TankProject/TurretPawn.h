@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Projectile.h"
 #include "GameFramework/Pawn.h"
 #include "TurretPawn.generated.h"
 
@@ -58,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RotateTurretSmooth() const;
 
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSubclassOf<AProjectile> ProjectileClass;
+	
 private:
 	void SetTeamColor();
 	

@@ -85,6 +85,21 @@ void ATurretPawn::Fire()
 	if (ProjectileSpawnPoint)
 	{
 		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
+
+		if (GetWorld())
+		{
+			FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation(); // Specify the location
+			FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation(); // Specify the rotation
+			ProjetileRotation.Yaw += 90;
+
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.Owner = this; 
+			
+			if (ProjectileClass != nullptr)
+			{
+				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjetileLocation, ProjetileRotation);
+			}
+		}
 	}
 	
 	if (GEngine)
@@ -98,6 +113,7 @@ void ATurretPawn::RotateTurretSmooth() const
 	if(IsValid(TurretMesh))
 	{
 		const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
+		
 		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), RotationRate);
 		TurretMesh->SetWorldRotation(NewRotation);
 		
