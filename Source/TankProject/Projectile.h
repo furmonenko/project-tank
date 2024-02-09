@@ -19,8 +19,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly)
+	USceneComponent* DefaultComponent;
+	
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UBoxComponent* HitBox;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float Speed = 2000.f;
 };

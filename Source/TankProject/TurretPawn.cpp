@@ -88,9 +88,9 @@ void ATurretPawn::Fire()
 
 		if (GetWorld())
 		{
-			FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation(); // Specify the location
-			FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation(); // Specify the rotation
-			ProjetileRotation.Yaw += 90;
+			FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation();
+			FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation();
+			ProjetileRotation.Yaw += 90.f;
 
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.Owner = this; 
