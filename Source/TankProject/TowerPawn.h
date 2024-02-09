@@ -6,6 +6,8 @@
 #include "TurretPawn.h"
 #include "TowerPawn.generated.h"
 
+class ATankPawn;
+
 UCLASS()
 class TANKPROJECT_API ATowerPawn : public ATurretPawn
 {
@@ -13,4 +15,8 @@ class TANKPROJECT_API ATowerPawn : public ATurretPawn
 
 public:
 	ATowerPawn();
+	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class ATankPawn* Tank = nullptr;
 };
