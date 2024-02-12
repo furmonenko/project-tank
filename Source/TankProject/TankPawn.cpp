@@ -49,8 +49,6 @@ void ATankPawn::SetTargetLookRotation(FRotator Rotation)
 {
 	if (IsValid(PlayerController) && IsValid(TurretMesh))
 	{
-		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, "Player Controller");
-
 		FHitResult HitResult;
 		PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 		

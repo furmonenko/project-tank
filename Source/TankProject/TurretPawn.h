@@ -5,6 +5,8 @@
 #include "GameFramework/Pawn.h"
 #include "TurretPawn.generated.h"
 
+class UHealthComponent;
+
 UCLASS()
 class TANKPROJECT_API ATurretPawn : public APawn
 {
@@ -61,6 +63,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UHealthComponent* Health;
 	
 private:
 	void SetTeamColor();

@@ -1,14 +1,16 @@
 #include "TurretPawn.h"
 #include "Components/CapsuleComponent.h"
+#include "HealthComponent.h"
 
 ATurretPawn::ATurretPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
+	Health = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	
 	RootComponent = CapsuleComponent;
 	
@@ -93,18 +95,14 @@ void ATurretPawn::Fire()
 			ProjetileRotation.Yaw += 90.f;
 
 			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.Instigator = GetInstigator();
 			SpawnParameters.Owner = this; 
 			
 			if (ProjectileClass != nullptr)
 			{
-				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjetileLocation, ProjetileRotation);
+				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
 			}
 		}
-	}
-	
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, "Fire");
 	}
 }
 
@@ -116,12 +114,5 @@ void ATurretPawn::RotateTurretSmooth() const
 		
 		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), RotationRate);
 		TurretMesh->SetWorldRotation(NewRotation);
-		
-#if WITH_EDITOR
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, NewRotation.ToString());
-			}
-		}
-#endif
+	}
 }

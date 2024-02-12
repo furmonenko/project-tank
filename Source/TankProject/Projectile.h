@@ -29,4 +29,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float Speed = 2000.f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Damage")
+	float Damage = 100.f;
 };
