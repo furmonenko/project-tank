@@ -65,7 +65,7 @@ public:
 	TSubclassOf<AProjectile> ProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UHealthComponent* Health;
+	UHealthComponent* Health;
 	
 private:
 	void SetTeamColor();

@@ -18,16 +18,12 @@ void UHealthComponent::BeginPlay()
 }
 
 
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
-	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+	CurrentHealth -= Damage;
 
+	// In case damage is less than health.
 	if (CurrentHealth <= 0.f)
 	{
 		GEngine->AddOnScreenDebugMessage(0, 4, FColor::Red, "Dead");
