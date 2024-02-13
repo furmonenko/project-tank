@@ -18,7 +18,7 @@ public:
 	virtual void Tick(float delta) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UCapsuleComponent* CapsuleComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -78,4 +78,8 @@ private:
 	
 	UPROPERTY()
 	UMaterialInstanceDynamic* M_TeamSlot;
+
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnTurretDeath(); 
 };

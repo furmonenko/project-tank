@@ -1,5 +1,7 @@
 #include "HealthComponent.h"
 
+#include "TurretPawn.h"
+
 UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -27,7 +29,13 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	if (CurrentHealth <= 0.f)
 	{
 		GEngine->AddOnScreenDebugMessage(0, 4, FColor::Red, "Dead");
-		GetOwner()->Destroy();
+
+		ATurretPawn* DamagedTurret = Cast<ATurretPawn>(DamagedActor);
+
+		if (IsValid(DamagedTurret))
+		{
+			DamagedTurret->OnTurretDeath();
+		}
 	}
 }
 
