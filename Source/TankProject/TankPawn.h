@@ -13,6 +13,12 @@ public:
 	ATankPawn();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UParticleSystemComponent* MovementSmokeParticleSystemComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UParticleSystem* MovementSmoke;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MovementSpeed = 0.f;
@@ -37,6 +43,9 @@ public:
 	
 	// virtual void Fire() override;
 	virtual void SetTargetLookRotation(FRotator Rotation) override;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool isMoving = false;
 	
 private:
 	UPROPERTY()

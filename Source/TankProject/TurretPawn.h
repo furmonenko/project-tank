@@ -66,6 +66,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	UHealthComponent* Health;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UParticleSystem* SmokeEffect;
 	
 private:
 	void SetTeamColor();

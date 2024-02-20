@@ -1,19 +1,20 @@
 #include "TurretPawn.h"
 #include "Components/CapsuleComponent.h"
 #include "HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ATurretPawn::ATurretPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
 	Health = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
-	
+
 	RootComponent = CapsuleComponent;
-	
+
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
@@ -24,7 +25,7 @@ ATurretPawn::ATurretPawn()
 void ATurretPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	SetTeamColor();	
+	SetTeamColor();
 }
 
 void ATurretPawn::Tick(float delta)
@@ -41,7 +42,7 @@ void ATurretPawn::OnConstruction(const FTransform& Transform)
 
 TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
 {
-	if(IsValid(TurretMesh))
+	if (IsValid(TurretMesh))
 	{
 		return TurretMesh->GetMaterialSlotNames();
 	}
@@ -50,7 +51,7 @@ TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
 
 TArray<FName> ATurretPawn::GetBaseAvailableSlotNames()
 {
-	if(IsValid(BaseMesh))
+	if (IsValid(BaseMesh))
 	{
 		return BaseMesh->GetMaterialSlotNames();
 	}
@@ -86,6 +87,11 @@ void ATurretPawn::Fire()
 {
 	if (ProjectileSpawnPoint)
 	{
+		if (SmokeEffect)
+		{
+			UGameplayStatics::SpawnEmitterAttached(SmokeEffect, ProjectileSpawnPoint);
+		}
+		
 		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
 
 		if (GetWorld())
@@ -96,23 +102,25 @@ void ATurretPawn::Fire()
 
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.Instigator = GetInstigator();
-			SpawnParameters.Owner = this; 
-			
+			SpawnParameters.Owner = this;
+
 			if (ProjectileClass != nullptr)
 			{
-				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
+				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(
+					ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
 			}
 		}
 	}
 }
 
-void ATurretPawn::RotateTurretSmooth() const 
+void ATurretPawn::RotateTurretSmooth() const
 {
-	if(IsValid(TurretMesh))
+	if (IsValid(TurretMesh))
 	{
 		const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-		
-		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, GetWorld()->GetDeltaSeconds(), RotationRate);
+
+		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation,
+		                                              GetWorld()->GetDeltaSeconds(), RotationRate);
 		TurretMesh->SetWorldRotation(NewRotation);
 	}
 }

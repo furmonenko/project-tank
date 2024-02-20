@@ -41,6 +41,12 @@ void AProjectile::HitTarget(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	if (IsValid(TurretPawn))
 	{
 		UGameplayStatics::ApplyDamage(TurretPawn, Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+
+		UWorld* world = GetWorld();
+		if (IsValid(world) && ExplosionEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+		}
 		Destroy();
 	}
 }
