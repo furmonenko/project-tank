@@ -42,10 +42,19 @@ void AProjectile::HitTarget(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	{
 		UGameplayStatics::ApplyDamage(TurretPawn, Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 
-		UWorld* world = GetWorld();
-		if (IsValid(world) && ExplosionEffect)
+		const UWorld* world = GetWorld();
+		if (!IsValid(world))
+		{
+			return;
+		}
+		if (ExplosionEffect)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+		}
+		
+		if (HitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
 		}
 		Destroy();
 	}

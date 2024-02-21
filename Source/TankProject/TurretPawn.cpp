@@ -1,6 +1,7 @@
 #include "TurretPawn.h"
 #include "Components/CapsuleComponent.h"
 #include "HealthComponent.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ATurretPawn::ATurretPawn()
@@ -12,12 +13,16 @@ ATurretPawn::ATurretPawn()
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
 	Health = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	TurretRotationAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("TurretRotationAudioComponent"));
 
 	RootComponent = CapsuleComponent;
 
+	TurretRotationAudioComponent->bAutoActivate = false;
+	
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
+	TurretRotationAudioComponent->SetupAttachment(GetRootComponent());
 
 	MaterialParameterName = "Color";
 }
@@ -31,7 +36,7 @@ void ATurretPawn::BeginPlay()
 void ATurretPawn::Tick(float delta)
 {
 	Super::Tick(delta);
-	RotateTurretSmooth();
+	RotateTurretSmooth(delta);
 }
 
 void ATurretPawn::OnConstruction(const FTransform& Transform)
@@ -91,7 +96,11 @@ void ATurretPawn::Fire()
 		{
 			UGameplayStatics::SpawnEmitterAttached(SmokeEffect, ProjectileSpawnPoint);
 		}
-		
+		if (ShotSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShotSound, ProjectileSpawnPoint->GetComponentLocation());
+		}
+
 		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
 
 		if (GetWorld())
@@ -113,14 +122,31 @@ void ATurretPawn::Fire()
 	}
 }
 
-void ATurretPawn::RotateTurretSmooth() const
+void ATurretPawn::RotateTurretSmooth(const float delta) const
 {
+	FRotator CurrentRotation;
+	FRotator NewRotation;
+
 	if (IsValid(TurretMesh))
 	{
-		const FRotator CurrentRotation = TurretMesh->GetComponentRotation();
-
-		const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation,
-		                                              GetWorld()->GetDeltaSeconds(), RotationRate);
-		TurretMesh->SetWorldRotation(NewRotation);
+		CurrentRotation = TurretMesh->GetComponentRotation();
+		FRotator DeltaRotation = (TurretTargetRotation - CurrentRotation).GetNormalized();
+		
+		if (!DeltaRotation.IsNearlyZero(0.5f))
+		{
+			if (!TurretRotationAudioComponent->IsPlaying())
+			{
+				TurretRotationAudioComponent->Play();
+			}
+			NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, delta, RotationRate);
+			TurretMesh->SetWorldRotation(NewRotation);
+		}
+		else
+		{
+			if (TurretRotationAudioComponent->IsPlaying())
+			{
+				TurretRotationAudioComponent->Stop();
+			}
+		}
 	}
 }

@@ -40,6 +40,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Turn(float ActionValue);
+
+	UFUNCTION(BlueprintCallable)
+	void Die();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Auido")
+	USoundBase* DeathSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* MovementAudioComponent;
 	
 	// virtual void Fire() override;
 	virtual void SetTargetLookRotation(FRotator Rotation) override;

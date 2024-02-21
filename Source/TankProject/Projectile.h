@@ -32,6 +32,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* ExplosionEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	USoundBase* HitSound;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float Speed = 2000.f;

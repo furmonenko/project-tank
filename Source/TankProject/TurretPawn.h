@@ -59,7 +59,7 @@ public:
 	FRotator TurretTargetRotation;
 	
 	UFUNCTION(BlueprintCallable)
-	void RotateTurretSmooth() const;
+	void RotateTurretSmooth(const float delta) const;
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;
@@ -69,6 +69,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* SmokeEffect;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	USoundBase* ShotSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* TurretRotationAudioComponent;
 	
 private:
 	void SetTeamColor();

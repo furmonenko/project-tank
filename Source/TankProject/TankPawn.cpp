@@ -2,8 +2,10 @@
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
 #include "Components/CapsuleComponent.h"
-#include "Particles/ParticleSystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+
 
 
 ATankPawn::ATankPawn()
@@ -11,9 +13,13 @@ ATankPawn::ATankPawn()
 {
 	MovementSmokeParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("SmokeParticles"));
 	MovementSmokeParticleSystemComponent->SetupAttachment(GetRootComponent());
+	MovementAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MovementAudioComponent"));
 
+	MovementAudioComponent->bAutoActivate = false;
 	MovementSmokeParticleSystemComponent->bAutoActivate = false;
 
+	MovementAudioComponent->SetupAttachment(GetRootComponent());
+	
 	if (IsValid(CapsuleComponent))
 	{
 		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -31,14 +37,19 @@ void ATankPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (MovementSmokeParticleSystemComponent)
+	if (MovementSmokeParticleSystemComponent && MovementAudioComponent)
 	{
 		if (isMoving)
 		{
+			if (!MovementAudioComponent->IsPlaying())
+			{
+				MovementAudioComponent->Play();
+			}
 			MovementSmokeParticleSystemComponent->Activate(true);
 		}
 		else
 		{
+			MovementAudioComponent->Stop();
 			MovementSmokeParticleSystemComponent->Deactivate();
 		}
 	}
@@ -63,6 +74,14 @@ void ATankPawn::Turn(float ActionValue)
 	{
 		const FRotator TargetRotation = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
 		AddActorLocalRotation(TargetRotation, true);
+	}
+}
+
+void ATankPawn::Die()
+{
+	if (DeathSound && GetWorld())
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
 	}
 }
 
