@@ -64,7 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UHealthComponent* Health;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
