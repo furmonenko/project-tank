@@ -94,7 +94,7 @@ void ATankPawn::SetTargetLookRotation(FRotator Rotation)
 
 		const FVector Direction = HitResult.ImpactPoint - TurretMesh->GetComponentLocation();
 
-		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 20.f, 30, FColor::Blue);
+		DrawDebugCrosshairs(GetWorld(), HitResult.Location, FRotator::ZeroRotator, 40.f, FColor::Red, false, 0.05f);
 		TurretTargetRotation = Direction.Rotation();
 
 		// By default tower is rotated 90 degrees wrong. Fixing it here.

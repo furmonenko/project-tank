@@ -105,8 +105,6 @@ void ATurretPawn::Fire()
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShotSound, ProjectileSpawnPoint->GetComponentLocation());
 		}
 
-		DrawDebugSphere(GetWorld(), ProjectileSpawnPoint->GetComponentLocation(), 10.f, 30, FColor::Red, true);
-
 		if (GetWorld())
 		{
 			FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation();

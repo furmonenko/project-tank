@@ -16,7 +16,11 @@ class TANKPROJECT_API ATowerPawn : public ATurretPawn
 public:
 	ATowerPawn();
 	virtual void Tick(float DeltaSeconds) override;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class ATankPawn* Tank = nullptr;
+
+	float FireRate = 2.f;
+	
+	FTimerHandle FireTimerHandle;
 };

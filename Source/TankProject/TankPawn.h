@@ -55,7 +55,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool isMoving = false;
-	
+
 private:
 	UPROPERTY()
 	APlayerController* PlayerController = nullptr;
