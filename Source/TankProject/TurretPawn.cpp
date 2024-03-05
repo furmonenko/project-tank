@@ -36,7 +36,11 @@ void ATurretPawn::BeginPlay()
 void ATurretPawn::Tick(float delta)
 {
 	Super::Tick(delta);
-	RotateTurretSmooth(delta);
+
+	if (TurretTargetRotation != FRotator::ZeroRotator)
+	{
+		RotateTurretSmooth(delta);	
+	}
 }
 
 void ATurretPawn::OnConstruction(const FTransform& Transform)
