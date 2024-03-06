@@ -43,8 +43,8 @@ void AProjectile::HitTarget(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 		UGameplayStatics::ApplyDamage(TurretPawn, Damage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 	}
 	
-	const UWorld* world = GetWorld();
-	if (!IsValid(world))
+	const UWorld* World = GetWorld();
+	if (!IsValid(World))
 	{
 		return;
 	}
