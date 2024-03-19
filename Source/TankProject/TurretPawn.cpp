@@ -3,6 +3,7 @@
 #include "HealthComponent.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 ATurretPawn::ATurretPawn()
 {
@@ -39,7 +40,14 @@ void ATurretPawn::Tick(float delta)
 
 	if (TurretTargetRotation != FRotator::ZeroRotator)
 	{
-		RotateTurretSmooth(delta);	
+		if (HasAuthority())
+		{
+			RotateTurretSmooth(delta);	
+		}
+		else
+		{
+			ServerRotateTurret(delta);
+		}
 	}
 }
 
@@ -124,7 +132,7 @@ void ATurretPawn::Fire()
 	}
 }
 
-void ATurretPawn::RotateTurretSmooth(const float delta) const
+void ATurretPawn::RotateTurretSmooth(const float delta)
 {
 	FRotator CurrentRotation;
 	FRotator NewRotation;
@@ -140,6 +148,7 @@ void ATurretPawn::RotateTurretSmooth(const float delta) const
 			{
 				TurretRotationAudioComponent->Play();
 			}
+			
 			NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, delta, RotationRate);
 			TurretMesh->SetWorldRotation(NewRotation);
 		}
@@ -151,4 +160,22 @@ void ATurretPawn::RotateTurretSmooth(const float delta) const
 			}
 		}
 	}
+}
+
+void ATurretPawn::ServerRotateTurret_Implementation(float delta)
+{
+	RotateTurretSmooth(delta);
+}
+
+bool ATurretPawn::ServerRotateTurret_Validate(float delta)
+{
+	// Any validations go here.
+	return true;
+}
+
+void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATurretPawn, TurretTargetRotation);
 }

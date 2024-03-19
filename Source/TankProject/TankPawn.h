@@ -20,16 +20,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* MovementSmoke;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MovementSpeed = 0.f;
+	
+	UPROPERTY(Replicated, EditAnywhere, Category = "Movement")
+	float MaxSpeed = 200.f;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float MaxSpeed = 200.f;;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float TurningSpeed = 50.f;
 	
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(Replicated, EditAnywhere, Category = "Movement")
 	float AccelerationRate = 5.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -41,6 +41,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Turn(float ActionValue);
 
+	UFUNCTION(Server, Reliable)
+	void ServerMove(float ActionValue);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTurn(float ActionValue);
+	
 	UFUNCTION(BlueprintCallable)
 	void Die();
 	
@@ -50,13 +56,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* MovementAudioComponent;
 	
-	// virtual void Fire() override;
+	UFUNCTION(BlueprintCallable)
 	virtual void SetTargetLookRotation(FRotator Rotation) override;
 
+	UFUNCTION(Server, Reliable)
+	void ServerSetTargetLookRotation(FRotator NewRotation);
+	
 	UPROPERTY(BlueprintReadWrite)
 	bool isMoving = false;
 
 private:
 	UPROPERTY()
 	APlayerController* PlayerController = nullptr;
+	
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 };

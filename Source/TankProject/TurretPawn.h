@@ -51,15 +51,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
     virtual void Fire();
-
-	UFUNCTION(BlueprintCallable)
+	
 	virtual void SetTargetLookRotation(FRotator Rotation) {};
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	FRotator TurretTargetRotation;
 	
 	UFUNCTION(BlueprintCallable)
-	void RotateTurretSmooth(const float delta) const;
+	void RotateTurretSmooth(const float delta);
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;
@@ -75,7 +74,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* TurretRotationAudioComponent;
-	
+
 private:
 	void SetTeamColor();
 	
@@ -90,5 +89,10 @@ private:
 
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnTurretDeath(); 
+	void OnTurretDeath();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRotateTurret(float delta);
+	
+	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 };
