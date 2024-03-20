@@ -68,11 +68,6 @@ void ATankPawn::Move(float ActionValue)
 	{
 		FVector MovementVector = FVector(MovementSpeed * GetWorld()->GetDeltaSeconds(), 0.f, 0.f);
 		AddActorLocalOffset(MovementVector, true);
-		
-		if (!HasAuthority())
-		{
-			ServerMove(ActionValue);
-		}
 	}
 }
 
@@ -88,21 +83,12 @@ void ATankPawn::Turn(float ActionValue)
 		const FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
 		
 		AddActorLocalRotation(TurnRate, true);
-
-		if (!HasAuthority())
-		{
-			ServerTurn(ActionValue);
-		}
 	}
 }
 
 void ATankPawn::ServerTurn_Implementation(float ActionValue)
 {
 	Turn(ActionValue);
-}
-bool ATankPawn::ServerTurn_Validate(float ActionValue)
-{
-	return true;
 }
 
 
@@ -114,7 +100,7 @@ void ATankPawn::Die()
 	}
 }
 
-void ATankPawn::SetTargetLookRotation(FRotator Rotation)
+void ATankPawn::SetTargetLookRotation()
 {
 	if (IsValid(PlayerController) && IsValid(TurretMesh))
 	{

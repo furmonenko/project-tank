@@ -40,14 +40,7 @@ void ATurretPawn::Tick(float delta)
 
 	if (TurretTargetRotation != FRotator::ZeroRotator)
 	{
-		if (HasAuthority())
-		{
-			RotateTurretSmooth(delta);	
-		}
-		else
-		{
-			ServerRotateTurret(delta);
-		}
+		RotateTurretSmooth(delta);
 	}
 }
 
@@ -165,12 +158,6 @@ void ATurretPawn::RotateTurretSmooth(const float delta)
 void ATurretPawn::ServerRotateTurret_Implementation(float delta)
 {
 	RotateTurretSmooth(delta);
-}
-
-bool ATurretPawn::ServerRotateTurret_Validate(float delta)
-{
-	// Any validations go here.
-	return true;
 }
 
 void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

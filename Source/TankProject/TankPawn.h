@@ -41,10 +41,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Turn(float ActionValue);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerMove(float ActionValue);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerTurn(float ActionValue);
 	
 	UFUNCTION(BlueprintCallable)
@@ -57,7 +57,7 @@ public:
 	UAudioComponent* MovementAudioComponent;
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void SetTargetLookRotation(FRotator Rotation) override;
+	virtual void SetTargetLookRotation() override;
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetTargetLookRotation(FRotator NewRotation);

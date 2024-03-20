@@ -52,9 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
     virtual void Fire();
 	
-	virtual void SetTargetLookRotation(FRotator Rotation) {};
+	virtual void SetTargetLookRotation() {};
 	
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	FRotator TurretTargetRotation;
 	
 	UFUNCTION(BlueprintCallable)
@@ -91,7 +91,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnTurretDeath();
 	
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable)
 	void ServerRotateTurret(float delta);
 	
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
