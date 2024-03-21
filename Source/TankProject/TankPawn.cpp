@@ -29,9 +29,6 @@ ATankPawn::ATankPawn()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SetReplicates(true);
-	SetReplicateMovement(true);
 
 	PlayerController = Cast<APlayerController>(GetController());
 }
@@ -56,10 +53,14 @@ void ATankPawn::Tick(float DeltaSeconds)
 			MovementSmokeParticleSystemComponent->Deactivate();
 		}
 	}
-
 }
 
-void ATankPawn::Move(float ActionValue)
+void ATankPawn::OnRep_TankLocation()
+{
+	SetActorLocation(TankLocation);
+}
+
+void ATankPawn::ServerMove_Implementation(float ActionValue)
 {
 	MovementSpeed = FMath::FInterpTo(MovementSpeed, MaxSpeed * ActionValue, GetWorld()->GetDeltaSeconds(),
 								 AccelerationRate);
@@ -68,29 +69,26 @@ void ATankPawn::Move(float ActionValue)
 	{
 		FVector MovementVector = FVector(MovementSpeed * GetWorld()->GetDeltaSeconds(), 0.f, 0.f);
 		AddActorLocalOffset(MovementVector, true);
-	}
-}
-
-void ATankPawn::ServerMove_Implementation(float ActionValue)
-{
-	Move(ActionValue);
-}
-
-void ATankPawn::Turn(float ActionValue)
-{
-	if (IsValid(GetWorld()))
-	{
-		const FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
 		
-		AddActorLocalRotation(TurnRate, true);
+		TankLocation = GetActorLocation();
 	}
+}
+
+void ATankPawn::OnRep_TankRotation()
+{
+	SetActorRotation(TankRotation);
 }
 
 void ATankPawn::ServerTurn_Implementation(float ActionValue)
 {
-	Turn(ActionValue);
-}
+	if (IsValid(GetWorld()))
+	{
+		FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
 
+		AddActorLocalRotation(TurnRate, true);
+		TankRotation = GetActorRotation();
+	}
+}
 
 void ATankPawn::Die()
 {
@@ -135,9 +133,6 @@ void ATankPawn::ServerSetTargetLookRotation_Implementation(FRotator NewRotation)
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ATankPawn, MovementSpeed);
-	DOREPLIFETIME(ATankPawn, TurningSpeed);
-	DOREPLIFETIME(ATankPawn, MaxSpeed);
-	DOREPLIFETIME(ATankPawn, AccelerationRate);
+	DOREPLIFETIME(ATankPawn, TankLocation);
+	DOREPLIFETIME(ATankPawn, TankRotation);
 }

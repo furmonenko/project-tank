@@ -31,6 +31,10 @@ ATurretPawn::ATurretPawn()
 void ATurretPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SetReplicates(true);
+	SetReplicateMovement(false);
+	
 	SetTeamColor();
 }
 
