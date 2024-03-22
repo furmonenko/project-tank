@@ -48,9 +48,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float RotationRate = 2.f;
+
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+	void ServerFire();
 	
-	UFUNCTION(BlueprintCallable)
-    virtual void Fire();
+	UFUNCTION()
+	virtual void PlayFireEffects();
 	
 	virtual void SetTargetLookRotation() {};
 	

@@ -79,6 +79,26 @@ void ATankPawn::OnRep_TankRotation()
 	SetActorRotation(TankRotation);
 }
 
+void ATankPawn::PlayLocalCameraShake()
+{
+	if (IsLocallyControlled() && CameraShakeClass)
+	{
+		if (PlayerController)
+		{
+			PlayerController->ClientStartCameraShake(CameraShakeClass);
+		}
+	}
+}
+
+void ATankPawn::ClientPlayFireEffects_Implementation()
+{
+	if (IsLocallyControlled())
+	{
+		PlayFireEffects();
+		PlayLocalCameraShake();	
+	}
+}
+
 void ATankPawn::ServerTurn_Implementation(float ActionValue)
 {
 	if (IsValid(GetWorld()))

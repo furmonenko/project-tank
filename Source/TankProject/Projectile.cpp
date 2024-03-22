@@ -22,6 +22,9 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	
 	HitBox->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::HitTarget);
 }
 

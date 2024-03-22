@@ -19,7 +19,7 @@ ATurretPawn::ATurretPawn()
 	RootComponent = CapsuleComponent;
 
 	TurretRotationAudioComponent->bAutoActivate = false;
-	
+
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
@@ -31,9 +31,10 @@ ATurretPawn::ATurretPawn()
 void ATurretPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SetReplicates(true);
 	SetReplicateMovement(false);
+	bAlwaysRelevant=true;
 	
 	SetTeamColor();
 }
@@ -97,35 +98,35 @@ void ATurretPawn::SetTeamColor()
 	}
 }
 
-void ATurretPawn::Fire()
+void ATurretPawn::ServerFire_Implementation()
 {
-	if (ProjectileSpawnPoint)
+	if (GetWorld())
 	{
-		if (SmokeEffect)
-		{
-			UGameplayStatics::SpawnEmitterAttached(SmokeEffect, ProjectileSpawnPoint);
-		}
-		if (ShotSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShotSound, ProjectileSpawnPoint->GetComponentLocation());
-		}
+		FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation();
+		FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation();
+		ProjetileRotation.Yaw += 90.f;
 
-		if (GetWorld())
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Instigator = GetInstigator();
+		SpawnParameters.Owner = this;
+
+		if (ProjectileClass != nullptr)
 		{
-			FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation();
-			FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation();
-			ProjetileRotation.Yaw += 90.f;
-
-			FActorSpawnParameters SpawnParameters;
-			SpawnParameters.Instigator = GetInstigator();
-			SpawnParameters.Owner = this;
-
-			if (ProjectileClass != nullptr)
-			{
-				AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(
-					ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
-			}
+			AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(
+				ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
 		}
+	}
+}
+
+void ATurretPawn::PlayFireEffects()
+{
+	if (SmokeEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(SmokeEffect, ProjectileSpawnPoint);
+	}
+	if (ShotSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ShotSound, ProjectileSpawnPoint->GetComponentLocation());
 	}
 }
 
@@ -138,14 +139,14 @@ void ATurretPawn::RotateTurretSmooth(const float delta)
 	{
 		CurrentRotation = TurretMesh->GetComponentRotation();
 		FRotator DeltaRotation = (TurretTargetRotation - CurrentRotation).GetNormalized();
-		
+
 		if (!DeltaRotation.IsNearlyZero(0.5f))
 		{
 			if (!TurretRotationAudioComponent->IsPlaying())
 			{
 				TurretRotationAudioComponent->Play();
 			}
-			
+
 			NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, delta, RotationRate);
 			TurretMesh->SetWorldRotation(NewRotation);
 		}

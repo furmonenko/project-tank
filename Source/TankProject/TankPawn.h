@@ -33,7 +33,14 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerTurn(float ActionValue);
 	
-
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+	void ClientPlayFireEffects();
+	
+	void PlayLocalCameraShake();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UParticleSystemComponent* MovementSmokeParticleSystemComponent;
 

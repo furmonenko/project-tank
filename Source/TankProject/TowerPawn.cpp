@@ -52,7 +52,7 @@ void ATowerPawn::Tick(float DeltaSeconds)
 		
 		if (!World->GetTimerManager().IsTimerActive(FireTimerHandle))
 		{
-			World->GetTimerManager().SetTimer(FireTimerHandle, this, &ATurretPawn::Fire, FireRate, true);
+			World->GetTimerManager().SetTimer(FireTimerHandle, this, &ATurretPawn::ServerFire, FireRate, true);
 		}
 	}
 	else
