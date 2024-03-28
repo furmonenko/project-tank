@@ -6,6 +6,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 
 ATankPawn::ATankPawn()

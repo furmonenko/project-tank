@@ -11,6 +11,7 @@ ATowerPawn::ATowerPawn()
 
 void ATowerPawn::Tick(float DeltaSeconds)
 {
+#if 0
 	Super::Tick(DeltaSeconds);
 
 	if (!Tank)
@@ -62,4 +63,5 @@ void ATowerPawn::Tick(float DeltaSeconds)
 			World->GetTimerManager().ClearTimer(FireTimerHandle);
 		}
 	}
+#endif
 }
