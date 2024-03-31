@@ -39,6 +39,11 @@ void ATankPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (TurretTargetRotation != FRotator::ZeroRotator)
+	{
+		RotateTurretSmooth(DeltaSeconds);
+	}
+
 	if (MovementSmokeParticleSystemComponent && MovementAudioComponent)
 	{
 		if (isMoving)
@@ -114,10 +119,10 @@ void ATankPawn::ServerTurn_Implementation(float ActionValue)
 
 void ATankPawn::Die()
 {
-	if (DeathSound && GetWorld())
+	/*if (DeathSound && GetWorld())
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
-	}
+	}*/
 }
 
 void ATankPawn::SetTargetLookRotation()

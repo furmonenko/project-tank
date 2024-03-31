@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BTDecorator_CanSeeEnemy.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -16,7 +13,10 @@ UBTDecorator_CanSeeEnemy::UBTDecorator_CanSeeEnemy()
 bool UBTDecorator_CanSeeEnemy::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	Super::CalculateRawConditionValue(OwnerComp, NodeMemory);
+	
+	UE_LOG(LogTemp, Warning, TEXT("CanSee"));
 
+	
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!IsValid(AIController))
 	{
@@ -35,9 +35,5 @@ bool UBTDecorator_CanSeeEnemy::CalculateRawConditionValue(UBehaviorTreeComponent
 		return false;
 	}
 
-	FVector AILocation = AIController->GetPawn()->GetActorLocation();
-	FVector TargetLocation = TargetActor->GetActorLocation();
-	FHitResult HitResult;
-	
 	return AIController->LineOfSightTo(TargetActor);
 }

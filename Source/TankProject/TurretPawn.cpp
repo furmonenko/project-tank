@@ -39,16 +39,6 @@ void ATurretPawn::BeginPlay()
 	SetTeamColor();
 }
 
-void ATurretPawn::Tick(float delta)
-{
-	Super::Tick(delta);
-
-	if (TurretTargetRotation != FRotator::ZeroRotator)
-	{
-		RotateTurretSmooth(delta);
-	}
-}
-
 void ATurretPawn::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
@@ -130,14 +120,13 @@ void ATurretPawn::PlayFireEffects()
 	}
 }
 
-void ATurretPawn::RotateTurretSmooth(const float delta)
+bool ATurretPawn::RotateTurretSmooth(const float Delta)
 {
-	FRotator CurrentRotation;
-	FRotator NewRotation;
+	bool bRotationFinished = false;
 
 	if (IsValid(TurretMesh))
 	{
-		CurrentRotation = TurretMesh->GetComponentRotation();
+		FRotator CurrentRotation = TurretMesh->GetComponentRotation();
 		FRotator DeltaRotation = (TurretTargetRotation - CurrentRotation).GetNormalized();
 
 		if (!DeltaRotation.IsNearlyZero(0.5f))
@@ -147,7 +136,7 @@ void ATurretPawn::RotateTurretSmooth(const float delta)
 				TurretRotationAudioComponent->Play();
 			}
 
-			NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, delta, RotationRate);
+			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, Delta, RotationRate);
 			TurretMesh->SetWorldRotation(NewRotation);
 		}
 		else
@@ -156,9 +145,13 @@ void ATurretPawn::RotateTurretSmooth(const float delta)
 			{
 				TurretRotationAudioComponent->Stop();
 			}
+			bRotationFinished = true;
 		}
 	}
+
+	return bRotationFinished;
 }
+
 
 void ATurretPawn::ServerRotateTurret_Implementation(float delta)
 {

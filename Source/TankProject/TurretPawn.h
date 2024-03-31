@@ -15,7 +15,6 @@ class TANKPROJECT_API ATurretPawn : public APawn
 public:
 	ATurretPawn();
 	virtual void BeginPlay() override;
-	virtual void Tick(float delta) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -61,7 +60,7 @@ public:
 	FRotator TurretTargetRotation;
 	
 	UFUNCTION(BlueprintCallable)
-	void RotateTurretSmooth(const float delta);
+	bool RotateTurretSmooth(const float delta);
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;

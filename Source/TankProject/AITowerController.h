@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,9 +6,7 @@
 #include "AITowerController.generated.h"
 
 class UBehaviorTreeComponent;
-/**
- * 
- */
+
 UCLASS()
 class TANKPROJECT_API AAITowerController : public AAIController
 {
@@ -20,6 +16,9 @@ class TANKPROJECT_API AAITowerController : public AAIController
 
 public:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> EnemyType;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UBehaviorTree* BehaviorTreeAsset;
@@ -34,5 +33,13 @@ public:
 	UAIPerceptionComponent* AIPerceptionComponent;
 
 	UFUNCTION()
-	virtual void OnPerceptionUpdated(const TArray<AActor*>& DetectedActors);
+	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	
+	UFUNCTION()
+	void UpdateClosestEnemyAsTarget();
+	
+	UPROPERTY()
+	TArray<AActor*> PerceivedEnemies;
+	//UFUNCTION()
+	//AActor* FindClosestEnemyOfType(const TArray<AActor*>& DetectedActors);
 };

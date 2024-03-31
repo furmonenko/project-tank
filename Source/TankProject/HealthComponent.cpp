@@ -28,8 +28,6 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 	// In case damage is less than health.
 	if (CurrentHealth <= 0.f)
 	{
-		GEngine->AddOnScreenDebugMessage(0, 4, FColor::Red, "Dead");
-
 		ATurretPawn* DamagedTurret = Cast<ATurretPawn>(DamagedActor);
 
 		if (IsValid(DamagedTurret))

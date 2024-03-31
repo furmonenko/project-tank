@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "AITowerController.h"
 
+#include "TankPawn.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -13,18 +11,13 @@ AAITowerController::AAITowerController()
 	BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>("BB");
 
 	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>("AI Perception Component");
-	AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AAITowerController::OnPerceptionUpdated);
+	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AAITowerController::OnTargetPerceptionUpdated);
 }
 
 void AAITowerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	/*AIPerceptionComponent = GetPerceptionComponent();
-	if (!IsValid(AIPerceptionComponent))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AIPerceptionComponent was not initialized correctly."));
-	}*/
+	
 
 	if(IsValid(BehaviorTreeAsset))
 	{
@@ -33,7 +26,60 @@ void AAITowerController::BeginPlay()
 	}
 }
 
-void AAITowerController::OnPerceptionUpdated(const TArray<AActor*>& DetectedActors)
+void AAITowerController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "OnPerceptionUpdated");
+	if (!Actor || !AIPerceptionComponent) return;
+
+	ATankPawn* EnemyTank = Cast<ATankPawn>(Actor);
+
+	if (!IsValid(EnemyTank))
+	{
+		return;
+	}
+	
+	if (Stimulus.WasSuccessfullySensed())
+	{
+		PerceivedEnemies.Push(EnemyTank);
+	}
+	else
+	{
+		PerceivedEnemies.Remove(EnemyTank);
+	}
+	
+	UpdateClosestEnemyAsTarget();
 }
+
+void AAITowerController::UpdateClosestEnemyAsTarget()
+{
+    AActor* ClosestEnemy = nullptr;
+    float ClosestDistanceSquared = MAX_FLT;
+    FVector MyLocation = GetPawn()->GetActorLocation();
+    
+    for (const auto& Enemy : PerceivedEnemies)
+    {
+        float DistanceSquared = FVector::DistSquared(MyLocation, Enemy->GetActorLocation());
+        if (DistanceSquared < ClosestDistanceSquared)
+        {
+            if (LineOfSightTo(Enemy))
+            {
+                ClosestEnemy = Enemy;
+                ClosestDistanceSquared = DistanceSquared;
+            }
+        }
+    }
+    
+    AActor* CurrentTarget = Cast<AActor>(GetBlackboardComponent()->GetValueAsObject("TargetTank"));
+    if (IsValid(ClosestEnemy) && ClosestEnemy != CurrentTarget)
+    {
+        GetBlackboardComponent()->SetValueAsObject("TargetTank", ClosestEnemy);
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("New Closest Target: %s"), *ClosestEnemy->GetName()));
+    }
+    else if (!ClosestEnemy)
+    {
+        GetBlackboardComponent()->ClearValue("TargetTank");
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Targets in Sight"));
+    }
+}
+
+
+

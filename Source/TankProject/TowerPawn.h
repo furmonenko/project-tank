@@ -23,4 +23,7 @@ public:
 	float FireRate = 2.f;
 	
 	FTimerHandle FireTimerHandle;
+
+	UFUNCTION()
+	void SetTargetLookRotation(const FVector& TargetLocation);
 };
