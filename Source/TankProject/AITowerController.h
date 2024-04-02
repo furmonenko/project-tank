@@ -35,11 +35,9 @@ public:
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UpdateClosestEnemyAsTarget();
 	
 	UPROPERTY()
 	TArray<AActor*> PerceivedEnemies;
-	//UFUNCTION()
-	//AActor* FindClosestEnemyOfType(const TArray<AActor*>& DetectedActors);
 };

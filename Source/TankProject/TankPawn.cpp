@@ -71,6 +71,12 @@ void ATankPawn::ServerMove_Implementation(float ActionValue)
 {
 	MovementSpeed = FMath::FInterpTo(MovementSpeed, MaxSpeed * ActionValue, GetWorld()->GetDeltaSeconds(),
 								 AccelerationRate);
+
+	if (FMath::Sign(MovementSpeed) != FMath::Sign(ActionValue) && ActionValue != 0)
+	{
+		MovementSpeed = 0.f;
+		return;
+	}
 	
 	if (IsValid(GetWorld()) && MovementSpeed != 0.f)
 	{
@@ -150,11 +156,6 @@ void ATankPawn::SetTargetLookRotation()
 			TurretTargetRotation = NewRotation;
 		}
 	}
-}
-
-void ATankPawn::ServerSetTargetLookRotation_Implementation(FRotator NewRotation)
-{
-	TurretTargetRotation = NewRotation;
 }
 
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

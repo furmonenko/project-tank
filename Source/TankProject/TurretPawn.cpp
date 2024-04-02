@@ -34,7 +34,7 @@ void ATurretPawn::BeginPlay()
 
 	SetReplicates(true);
 	SetReplicateMovement(false);
-	bAlwaysRelevant=true;
+	bAlwaysRelevant = true;
 	
 	SetTeamColor();
 }
@@ -120,6 +120,14 @@ void ATurretPawn::PlayFireEffects()
 	}
 }
 
+void ATurretPawn::MulticastRotateTurret_Implementation(const FRotator& NewRotation)
+{
+	if (IsValid(TurretMesh))
+	{
+		TurretMesh->SetWorldRotation(NewRotation);
+	}
+}
+
 bool ATurretPawn::RotateTurretSmooth(const float Delta)
 {
 	bool bRotationFinished = false;
@@ -137,7 +145,8 @@ bool ATurretPawn::RotateTurretSmooth(const float Delta)
 			}
 
 			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, Delta, RotationRate);
-			TurretMesh->SetWorldRotation(NewRotation);
+			
+			MulticastRotateTurret(NewRotation);
 		}
 		else
 		{
@@ -152,10 +161,14 @@ bool ATurretPawn::RotateTurretSmooth(const float Delta)
 	return bRotationFinished;
 }
 
-
 void ATurretPawn::ServerRotateTurret_Implementation(float delta)
 {
 	RotateTurretSmooth(delta);
+}
+
+void ATurretPawn::ServerSetTargetLookRotation_Implementation(FRotator NewRotation)
+{
+	TurretTargetRotation = NewRotation;
 }
 
 void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

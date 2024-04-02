@@ -73,9 +73,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetTargetLookRotation() override;
-
-	UFUNCTION(Server, Reliable)
-	void ServerSetTargetLookRotation(FRotator NewRotation);
 	
 	UPROPERTY(BlueprintReadWrite)
 	bool isMoving = false;

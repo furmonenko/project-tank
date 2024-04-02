@@ -59,6 +59,9 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	FRotator TurretTargetRotation;
 	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRotateTurret(const FRotator& NewRotation);
+	
 	UFUNCTION(BlueprintCallable)
 	bool RotateTurretSmooth(const float delta);
 
@@ -97,4 +100,7 @@ public:
 	void ServerRotateTurret(float delta);
 	
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetTargetLookRotation(FRotator NewRotation);
 };
