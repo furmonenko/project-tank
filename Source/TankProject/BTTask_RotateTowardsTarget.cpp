@@ -49,6 +49,7 @@ void UBTTask_RotateTowardsTarget::TickTask(UBehaviorTreeComponent& OwnerComp, ui
 	
 	if (TowerPawn->RotateTurretSmooth(DeltaSeconds))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, "Finish Rotation");
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	}
 }

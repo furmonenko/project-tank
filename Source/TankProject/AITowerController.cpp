@@ -18,6 +18,10 @@ void AAITowerController::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (!ControlledTurret)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "No Turret");
+	}
 
 	if(IsValid(BehaviorTreeAsset))
 	{
@@ -31,6 +35,7 @@ void AAITowerController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	if (!Actor || !AIPerceptionComponent) return;
 
 	ATankPawn* EnemyTank = Cast<ATankPawn>(Actor);
+	ControlledTurret = Cast<ATurretPawn>(GetPawn());
 
 	if (!IsValid(EnemyTank))
 	{
@@ -40,9 +45,11 @@ void AAITowerController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		PerceivedEnemies.Push(EnemyTank);
+		EnemyTank->OnChangedTeam.AddDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
 	}
 	else
 	{
+		EnemyTank->OnChangedTeam.RemoveDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
 		PerceivedEnemies.Remove(EnemyTank);
 	}
 	
@@ -51,16 +58,31 @@ void AAITowerController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 
 void AAITowerController::UpdateClosestEnemyAsTarget()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "UpdateClosestEnemyAsTarget");
+	
     AActor* ClosestEnemy = nullptr;
+	FVector MyLocation = GetPawn()->GetActorLocation();
     float ClosestDistanceSquared = MAX_FLT;
-    FVector MyLocation = GetPawn()->GetActorLocation();
     
     for (const auto& Enemy : PerceivedEnemies)
     {
         float DistanceSquared = FVector::DistSquared(MyLocation, Enemy->GetActorLocation());
         if (DistanceSquared < ClosestDistanceSquared)
         {
-            if (LineOfSightTo(Enemy))
+			ATurretPawn* EnemyTurret = Cast<ATurretPawn>(Enemy);
+
+        	if (!IsValid(EnemyTurret))
+        	{
+        		return;
+        	}
+
+        	if (!FTeamManager::IsEnemy(ControlledTurret, EnemyTurret))
+        	{
+        		GetBlackboardComponent()->ClearValue("TargetTank");
+        		continue;
+        	}
+        	
+            if (LineOfSightTo(EnemyTurret))
             {
                 ClosestEnemy = Enemy;
                 ClosestDistanceSquared = DistanceSquared;
@@ -72,12 +94,10 @@ void AAITowerController::UpdateClosestEnemyAsTarget()
     if (IsValid(ClosestEnemy) && ClosestEnemy != CurrentTarget)
     {
         GetBlackboardComponent()->SetValueAsObject("TargetTank", ClosestEnemy);
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("New Closest Target: %s"), *ClosestEnemy->GetName()));
     }
     else if (!ClosestEnemy)
     {
         GetBlackboardComponent()->ClearValue("TargetTank");
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Targets in Sight"));
     }
 }
 

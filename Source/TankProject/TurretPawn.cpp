@@ -34,7 +34,6 @@ void ATurretPawn::BeginPlay()
 
 	SetReplicates(true);
 	SetReplicateMovement(false);
-	bAlwaysRelevant = true;
 	
 	SetTeamColor();
 }
@@ -43,6 +42,54 @@ void ATurretPawn::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 	SetTeamColor();
+}
+
+void ATurretPawn::OnRep_ChangeTeam()
+{
+	SetTeamColor();
+}
+
+void ATurretPawn::ServerChangeTeam_Implementation(ETeam NewTeam)
+{
+	Team = NewTeam;
+	
+	if (!HasAuthority())
+	{
+		SetTeamColor();
+	}
+	else
+	{
+		OnRep_ChangeTeam();
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "OnChangedTeam");
+	OnChangedTeam.Broadcast();
+}
+
+void ATurretPawn::SetTeamColor()
+{
+	if (IsValid(M_TeamSlot))
+	{
+		if (IsValid(TurretMesh) && IsValid(BaseMesh))
+		{
+			TeamColor = FTeamManager::GetTeamColor(Team);
+			M_TeamSlot->SetVectorParameterValue(MaterialParameterName, TeamColor);
+		}
+	}
+	else
+	{
+		if (IsValid(DefaultMaterial))
+		{
+			M_TeamSlot = UMaterialInstanceDynamic::Create(DefaultMaterial, this);
+
+			BaseMesh->SetMaterialByName(TurretMeshSlotToColor, M_TeamSlot);
+			TurretMesh->SetMaterialByName(BaseMeshSlotToColor, M_TeamSlot);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("No DEFAULT MATERIAL"));
+		}
+	}
 }
 
 TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
@@ -61,31 +108,6 @@ TArray<FName> ATurretPawn::GetBaseAvailableSlotNames()
 		return BaseMesh->GetMaterialSlotNames();
 	}
 	return TArray<FName>{};
-}
-
-void ATurretPawn::SetTeamColor()
-{
-	if (IsValid(M_TeamSlot))
-	{
-		if (IsValid(TurretMesh) && IsValid(BaseMesh))
-		{
-			M_TeamSlot->SetVectorParameterValue(MaterialParameterName, TeamColor);
-		}
-	}
-	else
-	{
-		if (IsValid(DefaultMaterial))
-		{
-			M_TeamSlot = UMaterialInstanceDynamic::Create(DefaultMaterial, this);
-
-			BaseMesh->SetMaterialByName(TurretMeshSlotToColor, M_TeamSlot);
-			TurretMesh->SetMaterialByName(BaseMeshSlotToColor, M_TeamSlot);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("No DEFAULT MATERIAL"));
-		}
-	}
 }
 
 void ATurretPawn::ServerFire_Implementation()
@@ -176,4 +198,5 @@ void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATurretPawn, TurretTargetRotation);
+	DOREPLIFETIME(ATurretPawn, Team);
 }

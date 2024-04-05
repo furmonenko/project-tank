@@ -5,6 +5,7 @@
 #include "Perception/AIPerceptionTypes.h"
 #include "AITowerController.generated.h"
 
+class ATurretPawn;
 class UBehaviorTreeComponent;
 
 UCLASS()
@@ -14,9 +15,12 @@ class TANKPROJECT_API AAITowerController : public AAIController
 
 	AAITowerController();
 
+private:
+	ATurretPawn* ControlledTurret;
+	
 public:
 	virtual void BeginPlay() override;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> EnemyType;
 	

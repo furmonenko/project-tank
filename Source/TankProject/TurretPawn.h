@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Projectile.h"
+#include "TeamManager.h"
 #include "GameFramework/Pawn.h"
 #include "TurretPawn.generated.h"
 
@@ -16,6 +17,23 @@ public:
 	ATurretPawn();
 	virtual void BeginPlay() override;
 	virtual void OnConstruction(const FTransform& Transform) override;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangedTeam);
+	
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FChangedTeam OnChangedTeam;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_ChangeTeam, EditAnywhere, BlueprintReadWrite, Category = "Team")
+	ETeam Team = ETeam::Team_1;
+
+	UFUNCTION()
+	void OnRep_ChangeTeam();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerChangeTeam(ETeam NewTeam);
+	
+	UPROPERTY()
+	FLinearColor TeamColor;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UCapsuleComponent* CapsuleComponent;
@@ -32,9 +50,6 @@ public:
 	// Material, which M_TeamSlot is gonna be made of.
 	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
 	UMaterialInterface* DefaultMaterial;
-
-	UPROPERTY(EditAnywhere, Category = "TeamColor")
-	FLinearColor TeamColor;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
 	FName MaterialParameterName;
@@ -79,10 +94,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* TurretRotationAudioComponent;
-
-private:
+	
 	void SetTeamColor();
 	
+private:
 	UFUNCTION()
 	TArray <FName> GetTurretAvailableSlotNames();
 	
