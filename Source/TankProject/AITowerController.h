@@ -40,7 +40,7 @@ public:
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
 	UFUNCTION(BlueprintCallable)
-	void UpdateClosestEnemyAsTarget();
+	void UpdateClosestEnemyAsTarget(AActor* TurretPawn);
 	
 	UPROPERTY()
 	TArray<AActor*> PerceivedEnemies;

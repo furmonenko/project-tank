@@ -6,116 +6,161 @@
 #include "GameFramework/Pawn.h"
 #include "TurretPawn.generated.h"
 
+class UCapsuleComponent;
 class UHealthComponent;
 
 UCLASS()
 class TANKPROJECT_API ATurretPawn : public APawn
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	ATurretPawn();
-	virtual void BeginPlay() override;
-	virtual void OnConstruction(const FTransform& Transform) override;
+    // Constructor and Engine Overrides
+    ATurretPawn();
+    virtual void BeginPlay() override;
+    virtual void OnConstruction(const FTransform& Transform) override;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangedTeam);
-	
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FChangedTeam OnChangedTeam;
-	
-	UPROPERTY(ReplicatedUsing = OnRep_ChangeTeam, EditAnywhere, BlueprintReadWrite, Category = "Team")
-	ETeam Team = ETeam::Team_1;
+    UFUNCTION()
+    virtual void TurretInit();
 
-	UFUNCTION()
-	void OnRep_ChangeTeam();
-	
-	UFUNCTION(Server, Reliable)
-	void ServerChangeTeam(ETeam NewTeam);
-	
-	UPROPERTY()
-	FLinearColor TeamColor;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	class UCapsuleComponent* CapsuleComponent;
+    // Health Change Function
+    UFUNCTION()
+    virtual void OnHealthChanged(float CurrentHealth, float MaxHealth) {};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* TurretMesh;
+    // Team Functions
+    UFUNCTION(Server, Reliable)
+    void ServerChangeTeam(ETeam NewTeam);
 
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent* BaseMesh;
+    UFUNCTION()
+    void OnRep_ChangeTeam();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	USceneComponent* ProjectileSpawnPoint;
+    // Firing Functions
+    UPROPERTY(BlueprintReadWrite)
+    bool bCanFire = false;
+    
+    UFUNCTION(Server, Reliable, BlueprintCallable)
+    void ServerFire();
 
-	// Material, which M_TeamSlot is gonna be made of.
-	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
-	UMaterialInterface* DefaultMaterial;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
-	FName MaterialParameterName;
+    UFUNCTION()
+    virtual void PlayFireEffects();
 
-	UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetTurretAvailableSlotNames"))
-	FName TurretMeshSlotToColor;
+    // Turret Rotation Functions
+    UFUNCTION(NetMulticast, Reliable)
+    void MulticastRotateTurret(const FRotator& NewRotation);
 
-	UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetBaseAvailableSlotNames"))
-	FName BaseMeshSlotToColor;
+    UFUNCTION(BlueprintCallable)
+    bool RotateTurretSmooth(float DeltaTime);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float RotationRate = 2.f;
+    UFUNCTION(Server, Reliable)
+    void ServerRotateTurret(float DeltaTime);
 
-	UFUNCTION(Server, Reliable, BlueprintCallable)
-	void ServerFire();
-	
-	UFUNCTION()
-	virtual void PlayFireEffects();
-	
-	virtual void SetTargetLookRotation() {};
-	
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-	FRotator TurretTargetRotation;
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRotateTurret(const FRotator& NewRotation);
-	
-	UFUNCTION(BlueprintCallable)
-	bool RotateTurretSmooth(const float delta);
+    UFUNCTION(Server, Reliable)
+    void ServerSetTargetLookRotation(FRotator NewRotation);
 
-	UPROPERTY(EditAnywhere, Category = "Projectile")
-	TSubclassOf<AProjectile> ProjectileClass;
+    virtual void SetTargetLookRotation() {};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UHealthComponent* Health;
+protected:
+    // Components
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    UCapsuleComponent* CapsuleComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	UParticleSystem* SmokeEffect;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
-	USoundBase* ShotSound;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UStaticMeshComponent* TurretMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
-	UAudioComponent* TurretRotationAudioComponent;
-	
-	void SetTeamColor();
-	
-private:
-	UFUNCTION()
-	TArray <FName> GetTurretAvailableSlotNames();
-	
-	UFUNCTION()
-	TArray <FName> GetBaseAvailableSlotNames();
-	
-	UPROPERTY()
-	UMaterialInstanceDynamic* M_TeamSlot;
+    UPROPERTY(EditDefaultsOnly)
+    UStaticMeshComponent* BaseMesh;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+    USceneComponent* ProjectileSpawnPoint;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+    UHealthComponent* HealthComponent;
+
+    // Team and Movement Properties
+    UPROPERTY(ReplicatedUsing = OnRep_ChangeTeam, EditAnywhere, BlueprintReadWrite, Category = "Team")
+    ETeam Team = ETeam::Team_1;
+    
+    UPROPERTY(ReplicatedUsing = OnRep_bCanMove, BlueprintReadWrite)
+    bool bCanMove = true;
+
+    UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    FRotator TurretTargetRotation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+    float RotationRate = 2.f;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnTurretDeath();
-	
-	UFUNCTION(Server, Reliable)
-	void ServerRotateTurret(float delta);
-	
-	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
-	
-	UFUNCTION(Server, Reliable)
-	void ServerSetTargetLookRotation(FRotator NewRotation);
+    ETeam GetTeam() const { return Team; }
+    bool GetCanMove() const { return bCanMove; }
+    void SetCanMove(bool NewStatus) { bCanMove = NewStatus; }
+    
+protected:
+    // Team Color Properties
+    UPROPERTY()
+    FLinearColor TeamColor;
+
+    UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
+    UMaterialInterface* DefaultMaterial;
+
+    UPROPERTY(EditDefaultsOnly, Category = "TeamColor")
+    FName MaterialParameterName;
+
+    UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetTurretAvailableSlotNames"))
+    FName TurretMeshSlotToColor;
+
+    UPROPERTY(EditDefaultsOnly, Category = "TeamColor", meta = (GetOptions = "GetBaseAvailableSlotNames"))
+    FName BaseMeshSlotToColor;
+
+    // Projectile and Effects
+    UPROPERTY(EditAnywhere, Category = "Projectile")
+    TSubclassOf<AProjectile> ProjectileClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+    UParticleSystem* SmokeEffect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    USoundBase* ShotSound;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+    UAudioComponent* TurretRotationAudioComponent;
+    
+    // Helper Functions
+    UFUNCTION()
+    TArray<FName> GetTurretAvailableSlotNames() const;
+
+    UFUNCTION()
+    TArray<FName> GetBaseAvailableSlotNames() const;
+
+    UPROPERTY()
+    UMaterialInstanceDynamic* M_TeamSlot;
+
+    void SetTeamColor();
+
+    // Replication
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+    // Events
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangedTeam, AActor*, TurretPawn);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTurretDiedDelegate, AActor*, DiedTurret, AActor*, KillerTurret);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWonGame);
+    DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLostGame);
+    
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FWonGame WonGame;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FLostGame LostGame;
+
+    UPROPERTY(BlueprintCallable, Category = "Events")
+    FTurretDiedDelegate TurretDied;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FChangedTeam ChangedTeam;
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnTurretDeath(AActor* KillerTurretPawn);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnRep_bCanMove();
 };

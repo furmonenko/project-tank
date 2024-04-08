@@ -31,9 +31,6 @@ void ATankPlayerController::ChangeTeam(const int TeamNumber)
 		return;
 	}
 
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, GetPawn()->GetName());
-
 	ControlledTank = Cast<ATankPawn>(GetPawn());
 	if (!IsValid(ControlledTank))
 	{

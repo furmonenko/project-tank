@@ -39,6 +39,11 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::HitTarget(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!IsValid(OtherActor))
+	{
+		return;
+	}
+
 	ATurretPawn* TurretPawn = Cast<ATurretPawn>(OtherActor);
 
 	if (IsValid(TurretPawn))

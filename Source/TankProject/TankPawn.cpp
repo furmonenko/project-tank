@@ -1,6 +1,8 @@
 #include "TankPawn.h"
 #include "Engine/Engine.h"
 #include "DrawDebugHelpers.h"
+#include "HealthComponent.h"
+#include "TankPlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -31,14 +33,14 @@ ATankPawn::ATankPawn()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	PlayerController = Cast<APlayerController>(GetController());
 }
 
 void ATankPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
+	
 	if (TurretTargetRotation != FRotator::ZeroRotator)
 	{
 		RotateTurretSmooth(DeltaSeconds);
@@ -59,6 +61,50 @@ void ATankPawn::Tick(float DeltaSeconds)
 			MovementAudioComponent->Stop();
 			MovementSmokeParticleSystemComponent->Deactivate();
 		}
+	}
+}
+
+void ATankPawn::TurretInit()
+{
+	Super::TurretInit();
+
+	OnHealthChanged(HealthComponent->CurrentHealth, HealthComponent->MaxHealth);
+	OnRep_Ammo();
+}
+
+void ATankPawn::OnHealthChanged(float CurrentHealth, float MaxHealth)
+{
+	Super::OnHealthChanged(CurrentHealth, MaxHealth);
+	
+	PlayerController = Cast<APlayerController>(GetController());
+
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	ATankPlayerController* TankPlayerController = Cast<ATankPlayerController>(PlayerController);
+	
+	if (IsValid(TankPlayerController))
+	{
+		TankPlayerController->UpdateHUDHealth(CurrentHealth, MaxHealth);
+	}
+}
+
+void ATankPawn::OnRep_Ammo()
+{
+	PlayerController = Cast<APlayerController>(GetController());
+
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	ATankPlayerController* TankPlayerController = Cast<ATankPlayerController>(PlayerController);
+	
+	if (IsValid(TankPlayerController))
+	{
+		TankPlayerController->UpdateHUDAmmoCount(AmmoCount);
 	}
 }
 
@@ -114,7 +160,7 @@ void ATankPawn::ClientPlayFireEffects_Implementation()
 
 void ATankPawn::ServerTurn_Implementation(float ActionValue)
 {
-	if (IsValid(GetWorld()))
+	if (IsValid(GetWorld()) && bCanMove)
 	{
 		FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
 
@@ -125,6 +171,7 @@ void ATankPawn::ServerTurn_Implementation(float ActionValue)
 
 void ATankPawn::Die()
 {
+	TankDied.Broadcast();
 	/*if (DeathSound && GetWorld())
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
@@ -163,4 +210,5 @@ void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ATankPawn, TankLocation);
 	DOREPLIFETIME(ATankPawn, TankRotation);
+	DOREPLIFETIME(ATankPawn, AmmoCount);
 }

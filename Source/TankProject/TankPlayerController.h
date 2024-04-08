@@ -22,4 +22,10 @@ public:
 
 	UFUNCTION(Exec)
 	void ChangeTeam(const int TeamNumber);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateHUDAmmoCount(const int32 NewAmmo);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateHUDHealth(float NewHealth, float MaxHealth);
 };

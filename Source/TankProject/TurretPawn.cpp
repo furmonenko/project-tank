@@ -1,6 +1,8 @@
 #include "TurretPawn.h"
 #include "Components/CapsuleComponent.h"
 #include "HealthComponent.h"
+#include "TanksGameMode.h"
+#include "TanksGameState.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -12,17 +14,19 @@ ATurretPawn::ATurretPawn()
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule");
 	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
-	Health = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	TurretRotationAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("TurretRotationAudioComponent"));
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
+	
+	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
+	
 	RootComponent = CapsuleComponent;
 
 	TurretRotationAudioComponent->bAutoActivate = false;
-
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
-	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
+	
 	TurretRotationAudioComponent->SetupAttachment(GetRootComponent());
 
 	MaterialParameterName = "Color";
@@ -34,8 +38,12 @@ void ATurretPawn::BeginPlay()
 
 	SetReplicates(true);
 	SetReplicateMovement(false);
-	
-	SetTeamColor();
+
+	ATanksGameState* GameState = GetWorld()->GetGameState<ATanksGameState>();
+	if (GameState)
+	{
+		GameState->GameStarted.AddDynamic(this, &ATurretPawn::TurretInit);
+	}
 }
 
 void ATurretPawn::OnConstruction(const FTransform& Transform)
@@ -44,26 +52,33 @@ void ATurretPawn::OnConstruction(const FTransform& Transform)
 	SetTeamColor();
 }
 
-void ATurretPawn::OnRep_ChangeTeam()
+void ATurretPawn::TurretInit()
 {
+	bCanFire = true;
+	if (IsValid(HealthComponent))
+	{
+		HealthComponent->HealthChanged.AddDynamic(this, &ATurretPawn::OnHealthChanged);
+	}
+	
 	SetTeamColor();
 }
 
-void ATurretPawn::ServerChangeTeam_Implementation(ETeam NewTeam)
+TArray<FName> ATurretPawn::GetTurretAvailableSlotNames() const
 {
-	Team = NewTeam;
-	
-	if (!HasAuthority())
+	if (IsValid(TurretMesh))
 	{
-		SetTeamColor();
+		return TurretMesh->GetMaterialSlotNames();
 	}
-	else
-	{
-		OnRep_ChangeTeam();
-	}
+	return TArray<FName>{};
+}
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "OnChangedTeam");
-	OnChangedTeam.Broadcast();
+TArray<FName> ATurretPawn::GetBaseAvailableSlotNames() const
+{
+	if (IsValid(BaseMesh))
+	{
+		return BaseMesh->GetMaterialSlotNames();
+	}
+	return TArray<FName>{};
 }
 
 void ATurretPawn::SetTeamColor()
@@ -92,22 +107,25 @@ void ATurretPawn::SetTeamColor()
 	}
 }
 
-TArray<FName> ATurretPawn::GetTurretAvailableSlotNames()
+void ATurretPawn::OnRep_ChangeTeam()
 {
-	if (IsValid(TurretMesh))
-	{
-		return TurretMesh->GetMaterialSlotNames();
-	}
-	return TArray<FName>{};
+	SetTeamColor();
 }
 
-TArray<FName> ATurretPawn::GetBaseAvailableSlotNames()
+void ATurretPawn::ServerChangeTeam_Implementation(ETeam NewTeam)
 {
-	if (IsValid(BaseMesh))
+	Team = NewTeam;
+	
+	if (!HasAuthority())
 	{
-		return BaseMesh->GetMaterialSlotNames();
+		SetTeamColor();
 	}
-	return TArray<FName>{};
+	else
+	{
+		OnRep_ChangeTeam();
+	}
+	
+	ChangedTeam.Broadcast(this);
 }
 
 void ATurretPawn::ServerFire_Implementation()
@@ -199,4 +217,5 @@ void ATurretPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME(ATurretPawn, TurretTargetRotation);
 	DOREPLIFETIME(ATurretPawn, Team);
+	DOREPLIFETIME(ATurretPawn, bCanMove);
 }

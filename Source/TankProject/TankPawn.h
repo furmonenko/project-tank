@@ -14,7 +14,21 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTankDied);
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FTankDied TankDied;
+
+	virtual void TurretInit() override;
+	
+	virtual void OnHealthChanged(float CurrentHealth, float MaxHealth) override;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Ammo, VisibleAnywhere, BlueprintReadWrite,  Category = "Combat")
+	int32 AmmoCount = 10;
+	
+	UFUNCTION(BlueprintCallable)
+	void OnRep_Ammo();
+	
 	UPROPERTY(ReplicatedUsing=OnRep_TankLocation)
 	FVector TankLocation;
 

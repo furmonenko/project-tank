@@ -38,8 +38,8 @@ bool FTeamManager::IsEnemy(const ATurretPawn* FirstTurret, const ATurretPawn* Se
 		return false;
 	}
 
-	ETeam FirstTeam = FirstTurret->Team;
-	ETeam SecondTeam = SecondTurret->Team;
+	ETeam FirstTeam = FirstTurret->GetTeam();
+	ETeam SecondTeam = SecondTurret->GetTeam();
 
 	// Assuming everyone is enemy to everyone
 	return FirstTeam != SecondTeam;

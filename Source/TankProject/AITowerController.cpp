@@ -18,11 +18,6 @@ void AAITowerController::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (!ControlledTurret)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "No Turret");
-	}
-
 	if(IsValid(BehaviorTreeAsset))
 	{
 		BlackboardComponent->InitializeBlackboard(*BehaviorTreeAsset->BlackboardAsset);
@@ -45,21 +40,19 @@ void AAITowerController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		PerceivedEnemies.Push(EnemyTank);
-		EnemyTank->OnChangedTeam.AddDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
+		EnemyTank->ChangedTeam.AddDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
 	}
 	else
 	{
-		EnemyTank->OnChangedTeam.RemoveDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
+		EnemyTank->ChangedTeam.RemoveDynamic(this, &AAITowerController::UpdateClosestEnemyAsTarget);
 		PerceivedEnemies.Remove(EnemyTank);
 	}
 	
-	UpdateClosestEnemyAsTarget();
+	UpdateClosestEnemyAsTarget(EnemyTank);
 }
 
-void AAITowerController::UpdateClosestEnemyAsTarget()
+void AAITowerController::UpdateClosestEnemyAsTarget(AActor* TurretPawn)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "UpdateClosestEnemyAsTarget");
-	
     AActor* ClosestEnemy = nullptr;
 	FVector MyLocation = GetPawn()->GetActorLocation();
     float ClosestDistanceSquared = MAX_FLT;
