@@ -22,7 +22,10 @@ public:
 
     UFUNCTION()
     virtual void TurretInit();
-
+    
+    UFUNCTION(BlueprintCallable)
+    void HandleFireInput();
+    
     // Health Change Function
     UFUNCTION()
     virtual void OnHealthChanged(float CurrentHealth, float MaxHealth) {};
@@ -45,16 +48,16 @@ public:
     virtual void PlayFireEffects();
 
     // Turret Rotation Functions
-    UFUNCTION(NetMulticast, Reliable)
+    UFUNCTION(NetMulticast, Unreliable)
     void MulticastRotateTurret(const FRotator& NewRotation);
 
     UFUNCTION(BlueprintCallable)
     bool RotateTurretSmooth(float DeltaTime);
 
-    UFUNCTION(Server, Reliable)
+    UFUNCTION(Server, Unreliable)
     void ServerRotateTurret(float DeltaTime);
 
-    UFUNCTION(Server, Reliable)
+    UFUNCTION(Server, Unreliable)
     void ServerSetTargetLookRotation(FRotator NewRotation);
 
     virtual void SetTargetLookRotation() {};

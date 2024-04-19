@@ -29,6 +29,6 @@ EBTNodeResult::Type UBTTask_Shoot::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 		return EBTNodeResult::Failed;
 	}
 
-	TurretPawn->ServerFire();
+	TurretPawn->HandleFireInput();
 	return EBTNodeResult::Succeeded;
 }

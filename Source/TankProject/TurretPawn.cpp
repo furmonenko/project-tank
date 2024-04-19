@@ -18,15 +18,15 @@ ATurretPawn::ATurretPawn()
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>("ProjectileSpawnPoint");
-	
+
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
-	
+
 	RootComponent = CapsuleComponent;
 
 	TurretRotationAudioComponent->bAutoActivate = false;
 	TurretMesh->SetupAttachment(GetRootComponent());
 	BaseMesh->SetupAttachment(GetRootComponent());
-	
+
 	TurretRotationAudioComponent->SetupAttachment(GetRootComponent());
 
 	MaterialParameterName = "Color";
@@ -37,7 +37,7 @@ void ATurretPawn::BeginPlay()
 	Super::BeginPlay();
 
 	SetReplicates(true);
-	SetReplicateMovement(false);
+	SetReplicateMovement(true);
 
 	ATanksGameState* GameState = GetWorld()->GetGameState<ATanksGameState>();
 	if (GameState)
@@ -59,7 +59,7 @@ void ATurretPawn::TurretInit()
 	{
 		HealthComponent->HealthChanged.AddDynamic(this, &ATurretPawn::OnHealthChanged);
 	}
-	
+
 	SetTeamColor();
 }
 
@@ -115,7 +115,7 @@ void ATurretPawn::OnRep_ChangeTeam()
 void ATurretPawn::ServerChangeTeam_Implementation(ETeam NewTeam)
 {
 	Team = NewTeam;
-	
+
 	if (!HasAuthority())
 	{
 		SetTeamColor();
@@ -124,28 +124,8 @@ void ATurretPawn::ServerChangeTeam_Implementation(ETeam NewTeam)
 	{
 		OnRep_ChangeTeam();
 	}
-	
+
 	ChangedTeam.Broadcast(this);
-}
-
-void ATurretPawn::ServerFire_Implementation()
-{
-	if (GetWorld())
-	{
-		FVector ProjetileLocation = ProjectileSpawnPoint->GetComponentLocation();
-		FRotator ProjetileRotation = ProjectileSpawnPoint->GetComponentRotation();
-		ProjetileRotation.Yaw += 90.f;
-
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Instigator = GetInstigator();
-		SpawnParameters.Owner = this;
-
-		if (ProjectileClass != nullptr)
-		{
-			AProjectile* SpawnedActor = GetWorld()->SpawnActor<AProjectile>(
-				ProjectileClass, ProjetileLocation, ProjetileRotation, SpawnParameters);
-		}
-	}
 }
 
 void ATurretPawn::PlayFireEffects()
@@ -160,13 +140,35 @@ void ATurretPawn::PlayFireEffects()
 	}
 }
 
-void ATurretPawn::MulticastRotateTurret_Implementation(const FRotator& NewRotation)
+void ATurretPawn::HandleFireInput()
 {
-	if (IsValid(TurretMesh))
+	PlayFireEffects();
+	ServerFire();
+}
+
+void ATurretPawn::ServerFire_Implementation()
+{
+	if (GetWorld() && ProjectileClass != nullptr && ProjectileSpawnPoint != nullptr)
 	{
-		TurretMesh->SetWorldRotation(NewRotation);
+		FVector ProjectileLocation = ProjectileSpawnPoint->GetComponentLocation();
+		FRotator ProjectileRotation = ProjectileSpawnPoint->GetComponentRotation();
+		ProjectileRotation.Yaw += 90.f;
+
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Instigator = GetInstigator();
+		SpawnParameters.Owner = this;
+        
+		GetWorld()->SpawnActor<AProjectile>(
+			ProjectileClass, ProjectileLocation, ProjectileRotation, SpawnParameters);
 	}
 }
+
+
+void ATurretPawn::MulticastRotateTurret_Implementation(const FRotator& NewRotation)
+{
+	TurretMesh->SetWorldRotation(NewRotation);
+}
+
 
 bool ATurretPawn::RotateTurretSmooth(const float Delta)
 {
@@ -185,7 +187,7 @@ bool ATurretPawn::RotateTurretSmooth(const float Delta)
 			}
 
 			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TurretTargetRotation, Delta, RotationRate);
-			
+
 			MulticastRotateTurret(NewRotation);
 		}
 		else

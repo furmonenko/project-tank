@@ -4,13 +4,9 @@
 #include "HealthComponent.h"
 #include "TankPlayerController.h"
 #include "Components/CapsuleComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Perception/AISense_Sight.h"
-
 
 ATankPawn::ATankPawn()
 	: Super()
@@ -23,7 +19,7 @@ ATankPawn::ATankPawn()
 	MovementSmokeParticleSystemComponent->bAutoActivate = false;
 
 	MovementAudioComponent->SetupAttachment(GetRootComponent());
-	
+
 	if (IsValid(CapsuleComponent))
 	{
 		CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -33,14 +29,14 @@ ATankPawn::ATankPawn()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	PlayerController = Cast<APlayerController>(GetController());
 }
 
 void ATankPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	if (TurretTargetRotation != FRotator::ZeroRotator)
 	{
 		RotateTurretSmooth(DeltaSeconds);
@@ -75,7 +71,7 @@ void ATankPawn::TurretInit()
 void ATankPawn::OnHealthChanged(float CurrentHealth, float MaxHealth)
 {
 	Super::OnHealthChanged(CurrentHealth, MaxHealth);
-	
+
 	PlayerController = Cast<APlayerController>(GetController());
 
 	if (!IsValid(PlayerController))
@@ -84,7 +80,7 @@ void ATankPawn::OnHealthChanged(float CurrentHealth, float MaxHealth)
 	}
 
 	ATankPlayerController* TankPlayerController = Cast<ATankPlayerController>(PlayerController);
-	
+
 	if (IsValid(TankPlayerController))
 	{
 		TankPlayerController->UpdateHUDHealth(CurrentHealth, MaxHealth);
@@ -101,41 +97,141 @@ void ATankPawn::OnRep_Ammo()
 	}
 
 	ATankPlayerController* TankPlayerController = Cast<ATankPlayerController>(PlayerController);
-	
+
 	if (IsValid(TankPlayerController))
 	{
 		TankPlayerController->UpdateHUDAmmoCount(AmmoCount);
 	}
 }
 
-void ATankPawn::OnRep_TankLocation()
+void ATankPawn::ClientCorrectPosition_Implementation(FVector CorrectPosition)
 {
-	SetActorLocation(TankLocation);
+	FVector StartPosition = GetActorLocation();
+	
+	StartTime = GetWorld()->GetTimeSeconds();
+	float LerpDuration = 0.1f;
+	
+	GetWorld()->GetTimerManager().SetTimer(InterpolationTimerHandle, [this, StartPosition, CorrectPosition, LerpDuration]()
+	{
+		float Alpha = (GetWorld()->GetTimeSeconds() - StartTime) / LerpDuration;
+		if (Alpha < 1.0f)
+		{
+			SetActorLocation(FMath::Lerp(StartPosition, CorrectPosition, FMath::Clamp(Alpha, 0.0f, 1.0f)));
+		}
+		else
+		{
+			SetActorLocation(CorrectPosition);
+			GetWorld()->GetTimerManager().ClearTimer(InterpolationTimerHandle);
+		}
+	}, 0.01, true);
+}
+
+void ATankPawn::ClientCorrectRotation_Implementation(FRotator CorrectRotation)
+{
+	FRotator StartRotation = GetActorRotation();
+	float LerpDuration = 0.1f;
+
+	GetWorld()->GetTimerManager().SetTimer(InterpolationTimerHandle, [this, StartRotation, CorrectRotation, LerpDuration]()
+	{
+		float Alpha = (GetWorld()->GetTimeSeconds() - StartTime) / LerpDuration;
+		if (Alpha < 1.0f)
+		{
+			SetActorRotation(FMath::Lerp(StartRotation, CorrectRotation, FMath::Clamp(Alpha, 0.0f, 1.0f)));
+		}
+		else
+		{
+			SetActorRotation(CorrectRotation);
+			GetWorld()->GetTimerManager().ClearTimer(InterpolationTimerHandle);
+		}
+	}, 0.01, true);
+
+	StartTime = GetWorld()->GetTimeSeconds();
+}
+
+void ATankPawn::HandleInputMove(float ActionValue)
+{
+	Move(ActionValue);
+
+	FInputState NewState;
+	NewState.MoveValue = ActionValue;
+	NewState.Timestamp = GetWorld()->GetTimeSeconds();
+	NewState.Position = GetActorLocation();
+	NewState.Rotation = GetActorRotation();
+	InputBuffer.Add(NewState);
+
+	if (!HasAuthority())
+	{
+		ServerMove(ActionValue);
+	}
 }
 
 void ATankPawn::ServerMove_Implementation(float ActionValue)
 {
+	Move(ActionValue);
+
+	if (FVector::DistSquared(GetActorLocation(), ServerPosition) > 500) // Threshold value
+	{
+		ServerPosition = GetActorLocation();
+		ClientCorrectPosition(ServerPosition);
+	}
+}
+
+void ATankPawn::Move(float ActionValue)
+{
 	MovementSpeed = FMath::FInterpTo(MovementSpeed, MaxSpeed * ActionValue, GetWorld()->GetDeltaSeconds(),
-								 AccelerationRate);
+									 AccelerationRate);
 
 	if (FMath::Sign(MovementSpeed) != FMath::Sign(ActionValue) && ActionValue != 0)
 	{
 		MovementSpeed = 0.f;
 		return;
 	}
-	
+
 	if (IsValid(GetWorld()) && MovementSpeed != 0.f)
 	{
 		FVector MovementVector = FVector(MovementSpeed * GetWorld()->GetDeltaSeconds(), 0.f, 0.f);
 		AddActorLocalOffset(MovementVector, true);
-		
-		TankLocation = GetActorLocation();
 	}
 }
 
-void ATankPawn::OnRep_TankRotation()
+void ATankPawn::HandleInputTurn(float ActionValue)
 {
-	SetActorRotation(TankRotation);
+	Turn(ActionValue);
+
+	FInputState NewState;
+	NewState.TurnValue = ActionValue;
+	NewState.Timestamp = GetWorld()->GetTimeSeconds();
+	NewState.Position = GetActorLocation();
+	NewState.Rotation = GetActorRotation();
+	InputBuffer.Add(NewState);
+
+	if (!HasAuthority())
+	{
+		ServerTurn(ActionValue);
+	}
+}
+
+void ATankPawn::ServerTurn_Implementation(float ActionValue)
+{
+	Turn(ActionValue);
+
+	FRotator CurrentRotation = GetActorRotation().GetNormalized();
+	FRotator ServerStoredRotation = ServerRotation.GetNormalized();
+
+	if (!CurrentRotation.Equals(ServerStoredRotation, 2.0f)) // Test value
+	{
+		ClientCorrectRotation(GetActorRotation());
+		ServerRotation = GetActorRotation();
+	}
+}
+
+void ATankPawn::Turn(float ActionValue)
+{
+	if (IsValid(GetWorld()) && bCanMove)
+	{
+		FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
+		AddActorLocalRotation(TurnRate, true);
+	}
 }
 
 void ATankPawn::PlayLocalCameraShake()
@@ -154,18 +250,7 @@ void ATankPawn::ClientPlayFireEffects_Implementation()
 	if (IsLocallyControlled())
 	{
 		PlayFireEffects();
-		PlayLocalCameraShake();	
-	}
-}
-
-void ATankPawn::ServerTurn_Implementation(float ActionValue)
-{
-	if (IsValid(GetWorld()) && bCanMove)
-	{
-		FRotator TurnRate = FRotator(0.f, ActionValue * TurningSpeed * GetWorld()->GetDeltaSeconds(), 0.f);
-
-		AddActorLocalRotation(TurnRate, true);
-		TankRotation = GetActorRotation();
+		PlayLocalCameraShake();
 	}
 }
 
@@ -208,6 +293,9 @@ void ATankPawn::SetTargetLookRotation()
 void ATankPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATankPawn, InputBuffer);
+	DOREPLIFETIME(ATankPawn, MovementSpeed);
 	DOREPLIFETIME(ATankPawn, TankLocation);
 	DOREPLIFETIME(ATankPawn, TankRotation);
 	DOREPLIFETIME(ATankPawn, AmmoCount);

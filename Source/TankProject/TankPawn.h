@@ -2,20 +2,61 @@
 
 #include "CoreMinimal.h"
 #include "TurretPawn.h"
+#include "Containers/Deque.h"
+#include <deque>
 #include "TankPawn.generated.h"
+
+USTRUCT()
+struct FInputState
+{
+	GENERATED_BODY()
+    
+	float MoveValue;
+	float TurnValue;
+	float Timestamp;
+	FVector Position; 
+	FRotator Rotation;
+};
 
 UCLASS()
 class TANKPROJECT_API ATankPawn : public ATurretPawn
 {
 	GENERATED_BODY()
-
 public:
+	UPROPERTY(Replicated)
+	TArray<FInputState> InputBuffer;
+	
 	ATankPawn();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTankDied);
 
+	FTimerHandle InterpolationTimerHandle;
+
+	float StartTime = 0.f;
+	
+	FVector ServerPosition;
+	FRotator ServerRotation;
+
+	UFUNCTION(Client, Reliable)
+	void ClientCorrectPosition(FVector CorrectPosition);
+
+	UFUNCTION(Client, Reliable)
+	void ClientCorrectRotation(FRotator CorrectRotation);
+	
+	UFUNCTION(BlueprintCallable)
+	void Move(float ActionValue);
+	
+	UFUNCTION(BlueprintCallable)
+	void Turn(float ActionValue);
+	
+	UFUNCTION(BlueprintCallable)
+	void HandleInputMove(float ActionValue);
+
+	UFUNCTION(BlueprintCallable)
+	void HandleInputTurn(float ActionValue);
+	
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FTankDied TankDied;
 
@@ -29,22 +70,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnRep_Ammo();
 	
-	UPROPERTY(ReplicatedUsing=OnRep_TankLocation)
+	UPROPERTY(Replicated)
 	FVector TankLocation;
-
-	UFUNCTION()
-	void OnRep_TankLocation();
 	
-	UFUNCTION(Server, Reliable, BlueprintCallable)
+	UFUNCTION(Server, Unreliable)
 	void ServerMove(float ActionValue);
 	
-	UPROPERTY(ReplicatedUsing=OnRep_TankRotation)
+	UPROPERTY(Replicated)
 	FRotator TankRotation;
-
-	UFUNCTION()
-	void OnRep_TankRotation();
 	
-	UFUNCTION(Server, Reliable, BlueprintCallable)
+	UFUNCTION(Server, Unreliable, BlueprintCallable)
 	void ServerTurn(float ActionValue);
 	
 	UFUNCTION(Client, Reliable, BlueprintCallable)

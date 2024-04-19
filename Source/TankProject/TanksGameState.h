@@ -46,7 +46,7 @@ public:
 	int32 PreparationCountdown = 10;
 
 	UPROPERTY(ReplicatedUsing = OnRep_GameTimeCountdown, VisibleAnywhere, Category = "Game Phase")
-	int32 GameTime = 10;
+	int32 GameTime = 160;
 
 	UFUNCTION()
 	void OnRep_GameTimeCountdown();

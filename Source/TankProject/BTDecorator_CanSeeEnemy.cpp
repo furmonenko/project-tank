@@ -14,9 +14,6 @@ bool UBTDecorator_CanSeeEnemy::CalculateRawConditionValue(UBehaviorTreeComponent
 {
 	Super::CalculateRawConditionValue(OwnerComp, NodeMemory);
 	
-	UE_LOG(LogTemp, Warning, TEXT("CanSee"));
-
-	
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!IsValid(AIController))
 	{
